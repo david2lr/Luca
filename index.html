@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Luca Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --accent: #a855f7;
+            --bg: #030712;
+            --card: rgba(17, 24, 39, 0.8);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg);
+            color: #f8fafc;
+            font-family: 'Inter', -apple-system, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 85%;
+            max-width: 380px;
+            text-align: center;
+            background: var(--card);
+            padding: 2.5rem 1.5rem;
+            border-radius: 40px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+        }
+
+        h1 {
+            margin: 0 0 1.5rem 0;
+            font-size: 2.8rem;
+            font-weight: 600;
+            letter-spacing: -2px;
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 260px;
+            margin-bottom: 2rem;
+            filter: drop-shadow(0 0 15px rgba(99, 102, 241, 0.3));
+        }
+
+        /* Estructura de tabla para evitar movimientos */
+        .stats-table {
+            display: grid;
+            grid-template-columns: 85px 1fr; /* Columna fija para el texto y flexible para el tiempo */
+            gap: 12px 0;
+            text-align: left;
+            max-width: 280px;
+            margin: 0 auto;
+            align-items: center;
+        }
+
+        .label-text {
+            font-size: 1.1rem;
+            font-weight: 300;
+            color: #94a3b8;
+        }
+
+        .value-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            /* Forzamos que los números no varíen de ancho */
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 0.5px;
+            padding-left: 5px;
+        }
+
+        #percentage-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2.2rem;
+            font-weight: 600;
+            letter-spacing: -1px;
+            font-variant-numeric: tabular-nums;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Luca</h1>
+        
+        <div class="chart-container">
+            <canvas id="progressChart"></canvas>
+            <div id="percentage-center">0.00%</div>
+        </div>
+
+        <div class="stats-table">
+            <div class="label-text">Llevamos</div>
+            <div id="days-passed" class="value-text">--</div>
+            
+            <div class="label-text">Quedan</div>
+            <div id="days-left" class="value-text">--</div>
+        </div>
+    </div>
+
+    <script>
+        const startDate = new Date('2025-08-22T00:00:00');
+        const endDate = new Date('2026-05-29T00:00:00');
+        const totalDuration = endDate - startDate;
+
+        const ctx = document.getElementById('progressChart').getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, '#6366f1');
+        gradient.addColorStop(1, '#a855f7');
+
+        const progressChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [0, 100],
+                    backgroundColor: [gradient, '#1f2937'],
+                    borderWidth: 0,
+                    cutout: '88%',
+                    borderRadius: 50
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                plugins: { tooltip: { enabled: false }, legend: { display: false } }
+            }
+        });
+
+        function formatTimeSpan(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const days = Math.floor(totalSeconds / 86400);
+            const hours = Math.floor((totalSeconds % 86400) / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            
+            // PadStart añade un cero a la izquierda si el número es menor de 10 para evitar saltos
+            const h = String(hours).padStart(2, '0');
+            const m = String(minutes).padStart(2, '0');
+            const s = String(seconds).padStart(2, '0');
+            
+            return `${days}d ${h}h ${m}m ${s}s`;
+        }
+
+        function update() {
+            const now = new Date();
+            const elapsed = now - startDate;
+            const remaining = endDate - now;
+            
+            const progress = Math.min(Math.max((elapsed / totalDuration) * 100, 0), 100);
+
+            document.getElementById('percentage-center').innerText = progress.toFixed(2) + '%';
+            document.getElementById('days-passed').innerText = formatTimeSpan(elapsed);
+            document.getElementById('days-left').innerText = formatTimeSpan(Math.max(0, remaining));
+
+            progressChart.data.datasets[0].data = [progress, 100 - progress];
+            progressChart.update('none');
+        }
+
+        setInterval(update, 1000);
+        update();
+    </script>
+</body>
+</html>
