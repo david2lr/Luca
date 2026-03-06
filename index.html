@@ -10,141 +10,141 @@
         :root {
             --primary: #6366f1;
             --accent: #a855f7;
+            --warning: #f59e0b;
             --bg: #030712;
             --card: rgba(17, 24, 39, 0.8);
             --track: #1f2937;
         }
 
         body {
-            margin: 0;
-            padding: 0;
-            background: var(--bg);
-            color: #f8fafc;
+            margin: 0; padding: 0; background: var(--bg); color: #f8fafc;
             font-family: 'Inter', -apple-system, sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;/* Usamos dvh para que en móvil ignore la barra del navegador */
-			height: 100dvh; 
-			overflow: hidden;
-			/* Este padding "empuja" la tarjeta un poco hacia arriba */
-			padding-bottom: 40px;
+            display: flex; align-items: center; justify-content: center;
+            height: 100dvh; overflow: hidden;
         }
 
         .container {
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-            background: var(--card);
-            padding: 2.5rem 1.5rem;
-            border-radius: 40px;
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+            width: 92%; max-width: 380px; text-align: center;
+            background: var(--card); padding: 1.2rem; border-radius: 40px;
+            backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.9); display: flex; flex-direction: column;
         }
+
+        .header-nav {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white; border-radius: 50%; width: 35px; height: 35px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; font-weight: bold;
+        }
+
+        .nav-btn:active { background: var(--primary); transform: scale(0.9); }
 
         h1 {
-            margin: 0 0 1rem 0;
-            font-size: 2.5rem;
-            font-weight: 600;
-            letter-spacing: -2px;
+            margin: 0; font-size: 2rem; font-weight: 600; letter-spacing: -2px;
             background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
 
-        /* 1. Gráfico Circular */
         .chart-container {
-            position: relative;
-            height: 220px;
-            margin: 0 auto 1.5rem auto;
-            filter: drop-shadow(0 0 15px rgba(99, 102, 241, 0.2));
+            position: relative; height: 230px; margin: 0 auto;
+            filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.2));
         }
 
-        #percentage-center {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 2.2rem;
-            font-weight: 600;
-            letter-spacing: -1px;
-            font-variant-numeric: tabular-nums;
+        .inner-content {
+            position: absolute; top: 52%; left: 50%; transform: translate(-50%, -50%);
+            width: 80%; display: flex; flex-direction: column; align-items: center;
         }
 
-        /* 2. Stats (Días y HMS) */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 2rem;
+        #percentage-center { font-size: 1.8rem; font-weight: 600; margin-bottom: 2px; color: white; pointer-events: none;}
+        
+        .compare-text-inner { font-size: 0.75rem; color: #94a3b8; line-height: 1.1; pointer-events: none;}
+        #compare-name { display: block; color: white; font-weight: 600; font-size: 0.9rem; margin-top: 2px; }
+        #compare-emoji { font-size: 2.2rem; margin: 2px 0; display: block; line-height: 1; }
+
+        /* Nuevo estilo para el selector minimalista dentro del gráfico */
+        select {
+            background: transparent; color: #6366f1; border: none;
+            padding: 2px 5px; border-radius: 5px; font-size: 0.65rem; 
+            outline: none; cursor: pointer; text-transform: uppercase;
+            font-weight: 600; letter-spacing: 0.5px;
+        }
+        option { background: #111827; color: white; }
+
+        .week-badge {
+            display: inline-block; margin: 1.2rem auto 0.8rem auto;
+            background: rgba(99, 102, 241, 0.15); color: var(--primary);
+            padding: 4px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+            text-transform: uppercase; border: 1px solid rgba(99, 102, 241, 0.3);
+            transition: all 0.3s ease;
         }
 
+        .week-badge.not-current {
+            background: rgba(245, 158, 11, 0.15); color: var(--warning);
+            border-color: rgba(245, 158, 11, 0.4);
+        }
+
+        .measurements {
+            display: flex; justify-content: center; gap: 15px; margin-bottom: 1.2rem;
+        }
+        .meas-item { display: flex; flex-direction: column; }
+        .meas-val { font-size: 1rem; font-weight: 600; color: white; }
+        .meas-lab { font-size: 0.65rem; color: #64748b; text-transform: uppercase; }
+
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.2rem; }
         .stat-card {
-            background: rgba(255, 255, 255, 0.03);
-            padding: 15px 10px;
-            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.03); padding: 12px 5px; border-radius: 18px;
             border: 1px solid rgba(255, 255, 255, 0.03);
         }
+        .stat-label { font-size: 0.6rem; text-transform: uppercase; color: #64748b; margin-bottom: 2px; }
+        .stat-days { font-size: 1.1rem; font-weight: 600; color: white; }
+        .stat-hms { font-size: 0.75rem; color: #94a3b8; margin-top: 1px; }
 
-        .stat-label {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #64748b;
-            margin-bottom: 6px;
-        }
-
-        .stat-days {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: white;
-            display: block;
-        }
-
-        .stat-hms {
-            font-size: 0.9rem;
-            color: #94a3b8;
-            font-variant-numeric: tabular-nums;
-            margin-top: 4px;
-        }
-
-        /* 3. Barra Horizontal (Al final) */
-        .progress-wrapper {
-            margin-top: 1rem;
-            padding: 0 5px;
-        }
-
-        .progress-track {
-            width: 100%;
-            height: 8px;
-            background: var(--track);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, var(--primary), var(--accent));
-        }
-
-        .dates-row {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 10px;
-            font-size: 0.75rem;
-            color: #64748b;
-        }
+        .progress-track { width: 100%; height: 6px; background: var(--track); border-radius: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--accent)); }
+        .dates-row { display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.7rem; color: #64748b; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Luca</h1>
+        <div class="header-nav">
+            <button class="nav-btn" onclick="changeWeek(-1)">&#10094;</button>
+            <h1>Luca</h1>
+            <button class="nav-btn" onclick="changeWeek(1)">&#10095;</button>
+        </div>
 
         <div class="chart-container">
             <canvas id="progressChart"></canvas>
-            <div id="percentage-center">0.00%</div>
+            <div class="inner-content">
+                <div id="percentage-center">0.00%</div>
+                <div class="compare-text-inner">Luca es como un(a)</div>
+                <span id="compare-name">...</span>
+                <span id="compare-emoji"></span>
+                
+                <select id="category-select">
+                    <option value="fruits">🍎 Frutas</option>
+                    <option value="animals">🦁 Animales</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="current-week-label" class="week-badge">Semana --</div>
+
+        <div class="measurements">
+            <div class="meas-item">
+                <span id="meas-len" class="meas-val">--</span>
+                <span class="meas-lab">Longitud</span>
+            </div>
+            <div style="width: 1px; background: rgba(255,255,255,0.1); height: 25px; align-self: center;"></div>
+            <div class="meas-item">
+                <span id="meas-weight" class="meas-val">--</span>
+                <span class="meas-lab">Peso est.</span>
+            </div>
         </div>
 
         <div class="stats-grid">
@@ -176,29 +176,45 @@
         const endDate = new Date('2026-05-29T00:00:00');
         const totalDuration = endDate - startDate;
 
+        let manualWeekOffset = 0;
+
+        const weekData = {
+            27: { len: "36.6 cm", weight: "1.06 kg", fruit: { n: "coliflor", e: "🥦" }, anim: { n: "koala mini", e: "🐨" } },
+            28: { len: "37.9 cm", weight: "1.21 kg", fruit: { n: "coco", e: "🥥" }, anim: { n: "perezoso", e: "🦥" } },
+            29: { len: "39.2 cm", weight: "1.37 kg", fruit: { n: "calabaza", e: "🎃" }, anim: { n: "pato", e: "🦆" } },
+            30: { len: "40.5 cm", weight: "1.55 kg", fruit: { n: "col", e: "🥬" }, anim: { n: "nutria mini", e: "🦦" } },
+            31: { len: "41.8 cm", weight: "1.75 kg", fruit: { n: "calabacín", e: "🥒" }, anim: { n: "mono", e: "🐒" } },
+            32: { len: "43.0 cm", weight: "1.95 kg", fruit: { n: "apio", e: "🌿" }, anim: { n: "mapache mini", e: "🦝" } },
+            33: { len: "44.0 cm", weight: "2.16 kg", fruit: { n: "piña", e: "🍍" }, anim: { n: "zorrito", e: "🦊" } },
+            34: { len: "45.2 cm", weight: "2.37 kg", fruit: { n: "melón", e: "🍈" }, anim: { n: "canguro mini", e: "🦘" } },
+            35: { len: "46.3 cm", weight: "2.59 kg", fruit: { n: "melón verde", e: "🍈" }, anim: { n: "corderito", e: "🐑" } },
+            36: { len: "47.3 cm", weight: "2.81 kg", fruit: { n: "repollo", e: "🥬" }, anim: { n: "gato", e: "🐈" } },
+            37: { len: "48.3 cm", weight: "3.02 kg", fruit: { n: "puerro", e: "🥗" }, anim: { n: "perrito", e: "🐶" } },
+            38: { len: "49.2 cm", weight: "3.23 kg", fruit: { n: "papaya", e: "🥭" }, anim: { n: "cabrita", e: "🐐" } },
+            39: { len: "50.1 cm", weight: "3.43 kg", fruit: { n: "calabacín", e: "🥒" }, anim: { n: "foca junior", e: "🦭" } },
+            40: { len: "51.0 cm", weight: "3.61 kg", fruit: { n: "calabaza", e: "🎃" }, anim: { n: "guepardo", e: "🐆" } },
+            41: { len: "51.0 cm", weight: "3.61 kg", fruit: { n: "sandía", e: "🍉" }, anim: { n: "leoncito", e: "🦁" } }
+        };
+
         const ctx = document.getElementById('progressChart').getContext('2d');
         const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-        gradient.addColorStop(0, '#6366f1');
-        gradient.addColorStop(1, '#a855f7');
+        gradient.addColorStop(0, '#6366f1'); gradient.addColorStop(1, '#a855f7');
 
         const progressChart = new Chart(ctx, {
             type: 'doughnut',
-            data: {
-                datasets: [{
-                    data: [0, 100],
-                    backgroundColor: [gradient, '#1f2937'],
-                    borderWidth: 0,
-                    cutout: '85%',
-                    borderRadius: 20
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                animation: false,
-                plugins: { tooltip: { enabled: false }, legend: { display: false } }
-            }
+            data: { datasets: [{ data: [0, 100], backgroundColor: [gradient, '#1f2937'], borderWidth: 0, cutout: '82%', borderRadius: 25 }] },
+            options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { tooltip: { enabled: false }, legend: { display: false } } }
         });
+
+        function changeWeek(dir) {
+            const now = new Date();
+            const actualWeek = Math.floor((now - startDate) / (1000 * 60 * 60 * 24 * 7));
+            const targetWeek = (actualWeek + manualWeekOffset) + dir;
+            if (targetWeek >= 27 && targetWeek <= 41) {
+                manualWeekOffset += dir;
+                update();
+            }
+        }
 
         function update() {
             const now = new Date();
@@ -209,8 +225,32 @@
             progressChart.data.datasets[0].data = [progress, 100 - progress];
             progressChart.update('none');
             document.getElementById('percentage-center').innerText = progress.toFixed(2) + '%';
-
             document.getElementById('progress-fill').style.width = progress + '%';
+
+            let actualWeek = Math.floor(elapsed / (1000 * 60 * 60 * 24 * 7));
+            let displayWeek = actualWeek + manualWeekOffset;
+            
+            let dataWeek = displayWeek;
+            if (dataWeek < 27) dataWeek = 27;
+            if (dataWeek > 41) dataWeek = 41;
+
+            const currentData = weekData[dataWeek];
+            const category = document.getElementById('category-select').value;
+            const item = category === 'fruits' ? currentData.fruit : currentData.anim;
+
+            const weekLabel = document.getElementById('current-week-label');
+            if (manualWeekOffset !== 0) {
+                weekLabel.innerText = `⚠️ Semana ${displayWeek}`;
+                weekLabel.classList.add('not-current');
+            } else {
+                weekLabel.innerText = `Semana ${displayWeek}`;
+                weekLabel.classList.remove('not-current');
+            }
+
+            document.getElementById('compare-name').innerText = item.n;
+            document.getElementById('compare-emoji').innerText = item.e;
+            document.getElementById('meas-len').innerText = currentData.len;
+            document.getElementById('meas-weight').innerText = currentData.weight;
 
             const formatTime = (ms) => {
                 const totalSec = Math.floor(ms / 1000);
@@ -221,15 +261,14 @@
                 return { days: `${d} días`, hms: `${h}:${m}:${s}` };
             };
 
-            const p = formatTime(elapsed);
-            const l = formatTime(remaining);
-
+            const p = formatTime(elapsed); const l = formatTime(remaining);
             document.getElementById('passed-days').innerText = p.days;
             document.getElementById('passed-hms').innerText = p.hms;
             document.getElementById('left-days').innerText = l.days;
             document.getElementById('left-hms').innerText = l.hms;
         }
 
+        document.getElementById('category-select').addEventListener('change', update);
         setInterval(update, 1000);
         update();
     </script>
