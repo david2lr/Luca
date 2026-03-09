@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -217,56 +218,70 @@
         }
 
         function update() {
-            const now = new Date();
-            const elapsed = now - startDate;
-            const remaining = Math.max(0, endDate - now);
-            const progress = Math.min(Math.max((elapsed / totalDuration) * 100, 0), 100);
+			const now = new Date();
+			const elapsed = now - startDate;
+			const remaining = Math.max(0, endDate - now);
+			const progress = Math.min(Math.max((elapsed / totalDuration) * 100, 0), 100);
 
-            progressChart.data.datasets[0].data = [progress, 100 - progress];
-            progressChart.update('none');
-            document.getElementById('percentage-center').innerText = progress.toFixed(2) + '%';
-            document.getElementById('progress-fill').style.width = progress + '%';
+			// Actualizar gráfico
+			progressChart.data.datasets[0].data = [progress, 100 - progress];
+			progressChart.update('none');
+			document.getElementById('percentage-center').innerText = progress.toFixed(2) + '%';
+			document.getElementById('progress-fill').style.width = progress + '%';
 
-            let actualWeek = Math.floor(elapsed / (1000 * 60 * 60 * 24 * 7));
-            let displayWeek = actualWeek + manualWeekOffset;
-            
-            let dataWeek = displayWeek;
-            if (dataWeek < 27) dataWeek = 27;
-            if (dataWeek > 41) dataWeek = 41;
+			// CÁLCULO DE SEMANAS Y DÍAS (La clave de tu petición)
+			const totalDaysElapsed = Math.floor(elapsed / (1000 * 60 * 60 * 24));
+			const actualWeek = Math.floor(totalDaysElapsed / 7);
+			const extraDays = totalDaysElapsed % 7; // Los días que sobran de la semana
+			
+			let displayWeek = actualWeek + manualWeekOffset;
+			
+			// Para los datos del JSON (semana 27 a 41)
+			let dataWeek = displayWeek;
+			if (dataWeek < 27) dataWeek = 27;
+			if (dataWeek > 41) dataWeek = 41;
 
-            const currentData = weekData[dataWeek];
-            const category = document.getElementById('category-select').value;
-            const item = category === 'fruits' ? currentData.fruit : currentData.anim;
+			const currentData = weekData[dataWeek];
+			const category = document.getElementById('category-select').value;
+			const item = category === 'fruits' ? currentData.fruit : currentData.anim;
 
-            const weekLabel = document.getElementById('current-week-label');
-            if (manualWeekOffset !== 0) {
-                weekLabel.innerText = `⚠️ Semana ${displayWeek}`;
-                weekLabel.classList.add('not-current');
-            } else {
-                weekLabel.innerText = `Semana ${displayWeek}`;
-                weekLabel.classList.remove('not-current');
-            }
+			// LÓGICA DE LA ETIQUETA (Badge)
+			const weekLabel = document.getElementById('current-week-label');
+			
+			// Si estamos viendo la semana real, añadimos el +X
+			// Si estamos navegando manualmente (offset != 0), ocultamos el +X para no confundir
+			let daysSuffix = (manualWeekOffset === 0 && extraDays > 0) ? ` +${extraDays}` : "";
+			
+			if (manualWeekOffset !== 0) {
+				weekLabel.innerText = `⚠️ Semana ${displayWeek}`;
+				weekLabel.classList.add('not-current');
+			} else {
+				weekLabel.innerText = `Semana ${displayWeek}${daysSuffix}`;
+				weekLabel.classList.remove('not-current');
+			}
 
-            document.getElementById('compare-name').innerText = item.n;
-            document.getElementById('compare-emoji').innerText = item.e;
-            document.getElementById('meas-len').innerText = currentData.len;
-            document.getElementById('meas-weight').innerText = currentData.weight;
+			// Actualización de textos y mediciones
+			document.getElementById('compare-name').innerText = item.n;
+			document.getElementById('compare-emoji').innerText = item.e;
+			document.getElementById('meas-len').innerText = currentData.len;
+			document.getElementById('meas-weight').innerText = currentData.weight;
 
-            const formatTime = (ms) => {
-                const totalSec = Math.floor(ms / 1000);
-                const d = Math.floor(totalSec / 86400);
-                const h = String(Math.floor((totalSec % 86400) / 3600)).padStart(2, '0');
-                const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
-                const s = String(totalSec % 60).padStart(2, '0');
-                return { days: `${d} días`, hms: `${h}:${m}:${s}` };
-            };
+			const formatTime = (ms) => {
+				const totalSec = Math.floor(ms / 1000);
+				const d = Math.floor(totalSec / 86400);
+				const h = String(Math.floor((totalSec % 86400) / 3600)).padStart(2, '0');
+				const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
+				const s = String(totalSec % 60).padStart(2, '0');
+				return { days: `${d} días`, hms: `${h}:${m}:${s}` };
+			};
 
-            const p = formatTime(elapsed); const l = formatTime(remaining);
-            document.getElementById('passed-days').innerText = p.days;
-            document.getElementById('passed-hms').innerText = p.hms;
-            document.getElementById('left-days').innerText = l.days;
-            document.getElementById('left-hms').innerText = l.hms;
-        }
+			const p = formatTime(elapsed); 
+			const l = formatTime(remaining);
+			document.getElementById('passed-days').innerText = p.days;
+			document.getElementById('passed-hms').innerText = p.hms;
+			document.getElementById('left-days').innerText = l.days;
+			document.getElementById('left-hms').innerText = l.hms;
+		}
 
         document.getElementById('category-select').addEventListener('change', update);
         setInterval(update, 1000);
