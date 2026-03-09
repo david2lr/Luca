@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -15,99 +14,83 @@
             --bg: #030712;
             --card: rgba(17, 24, 39, 0.8);
             --track: #1f2937;
+            --glass: rgba(255, 255, 255, 0.05);
         }
-
         body {
             margin: 0; padding: 0; background: var(--bg); color: #f8fafc;
             font-family: 'Inter', -apple-system, sans-serif;
             display: flex; align-items: center; justify-content: center;
             height: 100dvh; overflow: hidden;
         }
-
         .container {
             width: 92%; max-width: 380px; text-align: center;
             background: var(--card); padding: 1.2rem; border-radius: 40px;
             backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: 0 0 50px rgba(0, 0, 0, 0.9); display: flex; flex-direction: column;
+            position: relative;
         }
-
-        .header-nav {
-            display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 1rem;
-        }
-
+        .header-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem; }
         .nav-btn {
-            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--glass); border: 1px solid rgba(255, 255, 255, 0.1);
             color: white; border-radius: 50%; width: 35px; height: 35px;
             cursor: pointer; display: flex; align-items: center; justify-content: center;
             transition: all 0.2s; font-weight: bold;
         }
-
         .nav-btn:active { background: var(--primary); transform: scale(0.9); }
-
+        
+        .title-wrapper { display: flex; align-items: center; gap: 8px; }
         h1 {
-            margin: 0; font-size: 2rem; font-weight: 600; letter-spacing: -2px;
+            margin: 0; font-size: 1.8rem; font-weight: 600; letter-spacing: -2px;
             background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-
-        .chart-container {
-            position: relative; height: 230px; margin: 0 auto;
-            filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.2));
+        .info-trigger {
+            background: none; border: 1px solid rgba(255,255,255,0.2);
+            color: rgba(255,255,255,0.4); width: 18px; height: 18px;
+            border-radius: 50%; font-size: 0.65rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; margin-top: 4px;
         }
 
-        .inner-content {
-            position: absolute; top: 52%; left: 50%; transform: translate(-50%, -50%);
-            width: 80%; display: flex; flex-direction: column; align-items: center;
-        }
+        .chart-container { position: relative; height: 210px; margin: 0 auto; filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.2)); }
+        .inner-content { position: absolute; top: 52%; left: 50%; transform: translate(-50%, -50%); width: 80%; display: flex; flex-direction: column; align-items: center; }
+        #percentage-center { font-size: 1.6rem; font-weight: 600; color: white; }
+        .compare-text-inner { font-size: 0.7rem; color: #94a3b8; }
+        #compare-name { display: block; color: white; font-weight: 600; font-size: 0.85rem; }
+        #compare-emoji { font-size: 2rem; margin: 2px 0; display: block; line-height: 1; }
 
-        #percentage-center { font-size: 1.8rem; font-weight: 600; margin-bottom: 2px; color: white; pointer-events: none;}
-        
-        .compare-text-inner { font-size: 0.75rem; color: #94a3b8; line-height: 1.1; pointer-events: none;}
-        #compare-name { display: block; color: white; font-weight: 600; font-size: 0.9rem; margin-top: 2px; }
-        #compare-emoji { font-size: 2.2rem; margin: 2px 0; display: block; line-height: 1; }
+        select { background: transparent; color: #6366f1; border: none; font-size: 0.6rem; font-weight: 600; outline: none; cursor: pointer; text-transform: uppercase; }
 
-        /* Nuevo estilo para el selector minimalista dentro del gráfico */
-        select {
-            background: transparent; color: #6366f1; border: none;
-            padding: 2px 5px; border-radius: 5px; font-size: 0.65rem; 
-            outline: none; cursor: pointer; text-transform: uppercase;
-            font-weight: 600; letter-spacing: 0.5px;
-        }
-        option { background: #111827; color: white; }
+        .week-badge { display: inline-block; margin: 0.8rem auto; background: rgba(99, 102, 241, 0.15); color: var(--primary); padding: 4px 14px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; border: 1px solid rgba(99, 102, 241, 0.3); }
+        .week-badge.not-current { background: rgba(245, 158, 11, 0.15); color: var(--warning); border-color: rgba(245, 158, 11, 0.4); }
 
-        .week-badge {
-            display: inline-block; margin: 1.2rem auto 0.8rem auto;
-            background: rgba(99, 102, 241, 0.15); color: var(--primary);
-            padding: 4px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;
-            text-transform: uppercase; border: 1px solid rgba(99, 102, 241, 0.3);
-            transition: all 0.3s ease;
-        }
+        .measurements { display: flex; justify-content: center; gap: 15px; margin-bottom: 0.8rem; }
+        .meas-val { font-size: 0.9rem; font-weight: 600; color: white; display: block; }
+        .meas-lab { font-size: 0.6rem; color: #64748b; text-transform: uppercase; }
 
-        .week-badge.not-current {
-            background: rgba(245, 158, 11, 0.15); color: var(--warning);
-            border-color: rgba(245, 158, 11, 0.4);
-        }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1rem; }
+        .stat-card { background: rgba(255, 255, 255, 0.03); padding: 10px 5px; border-radius: 18px; border: 1px solid rgba(255, 255, 255, 0.03); }
+        .stat-label { font-size: 0.55rem; text-transform: uppercase; color: #64748b; }
+        .stat-days { font-size: 1rem; font-weight: 600; color: white; }
+        .stat-hms { font-size: 0.7rem; color: #94a3b8; }
 
-        .measurements {
-            display: flex; justify-content: center; gap: 15px; margin-bottom: 1.2rem;
+        .fact-container {
+            background: rgba(99, 102, 241, 0.05); padding: 12px; border-radius: 20px;
+            margin-bottom: 1rem; border: 1px dashed rgba(99, 102, 241, 0.2); min-height: 60px;
+            display: flex; align-items: center; justify-content: center;
         }
-        .meas-item { display: flex; flex-direction: column; }
-        .meas-val { font-size: 1rem; font-weight: 600; color: white; }
-        .meas-lab { font-size: 0.65rem; color: #64748b; text-transform: uppercase; }
-
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.2rem; }
-        .stat-card {
-            background: rgba(255, 255, 255, 0.03); padding: 12px 5px; border-radius: 18px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-        }
-        .stat-label { font-size: 0.6rem; text-transform: uppercase; color: #64748b; margin-bottom: 2px; }
-        .stat-days { font-size: 1.1rem; font-weight: 600; color: white; }
-        .stat-hms { font-size: 0.75rem; color: #94a3b8; margin-top: 1px; }
+        #weekly-fact { font-size: 0.75rem; line-height: 1.4; color: #cbd5e1; margin: 0; font-style: italic; }
 
         .progress-track { width: 100%; height: 6px; background: var(--track); border-radius: 10px; overflow: hidden; }
         .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--accent)); }
-        .dates-row { display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.7rem; color: #64748b; }
+        .dates-row { display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.65rem; color: #64748b; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 100; }
+        .modal-card { width: 85%; max-width: 320px; background: #111827; border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; padding: 1.5rem; position: relative; }
+        .modal-close { position: absolute; top: 15px; right: 20px; color: #64748b; font-size: 1.2rem; cursor: pointer; }
+        .info-sec { text-align: left; margin-bottom: 1rem; }
+        .info-sec h3 { font-size: 0.65rem; text-transform: uppercase; color: var(--primary); margin: 0 0 4px 0; }
+        .info-sec p { margin: 0; font-size: 0.85rem; line-height: 1.4; color: #e2e8f0; }
+        .weather-sub { display: flex; gap: 15px; margin-top: 4px; font-size: 0.75rem; color: #94a3b8; }
     </style>
 </head>
 <body>
@@ -115,7 +98,10 @@
     <div class="container">
         <div class="header-nav">
             <button class="nav-btn" onclick="changeWeek(-1)">&#10094;</button>
-            <h1>Luca</h1>
+            <div class="title-wrapper">
+                <h1>Luca</h1>
+                <button class="info-trigger" onclick="toggleModal(true)">i</button>
+            </div>
             <button class="nav-btn" onclick="changeWeek(1)">&#10095;</button>
         </div>
 
@@ -126,7 +112,6 @@
                 <div class="compare-text-inner">Luca es como un(a)</div>
                 <span id="compare-name">...</span>
                 <span id="compare-emoji"></span>
-                
                 <select id="category-select">
                     <option value="fruits">🍎 Frutas</option>
                     <option value="animals">🦁 Animales</option>
@@ -137,15 +122,13 @@
         <div id="current-week-label" class="week-badge">Semana --</div>
 
         <div class="measurements">
-            <div class="meas-item">
-                <span id="meas-len" class="meas-val">--</span>
-                <span class="meas-lab">Longitud</span>
-            </div>
-            <div style="width: 1px; background: rgba(255,255,255,0.1); height: 25px; align-self: center;"></div>
-            <div class="meas-item">
-                <span id="meas-weight" class="meas-val">--</span>
-                <span class="meas-lab">Peso est.</span>
-            </div>
+            <div class="meas-item"><span id="meas-len" class="meas-val">--</span><span class="meas-lab">Longitud</span></div>
+            <div style="width: 1px; background: rgba(255,255,255,0.1); height: 20px; align-self: center;"></div>
+            <div class="meas-item"><span id="meas-weight" class="meas-val">--</span><span class="meas-lab">Peso est.</span></div>
+        </div>
+
+        <div class="fact-container">
+            <p id="weekly-fact">Cargando hito de la semana...</p>
         </div>
 
         <div class="stats-grid">
@@ -162,12 +145,21 @@
         </div>
 
         <div class="progress-wrapper">
-            <div class="progress-track">
-                <div id="progress-fill" class="progress-fill"></div>
-            </div>
-            <div class="dates-row">
-                <span>22/08/2025</span>
-                <span>29/05/2026</span>
+            <div class="progress-track"><div id="progress-fill" class="progress-fill"></div></div>
+            <div class="dates-row"><span>22/08/2025</span><span>29/05/2026</span></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-info" onclick="toggleModal(false)">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <span class="modal-close" onclick="toggleModal(false)">&times;</span>
+            <div class="info-sec"><h3>Nombre Luca</h3><p>Origen griego (<strong>Loukas</strong>). Significa "el que trae la luz" o "el que brilla".</p></div>
+            <div class="info-sec"><h3>Año Chino 2026</h3><p><strong>Caballo de Fuego</strong>. Ocurre cada 60 años; energía desbordante, entusiasta e independiente.</p></div>
+            <div class="info-sec"><h3>Zodíaco</h3><p>♊ <strong>Géminis</strong></p></div>
+            <div class="info-sec" style="margin-bottom:0">
+                <h3>Clima en Vigo (29 mayo)</h3>
+                <p>⛅ Histórico: 14°C - 21°C</p>
+                <div class="weather-sub"><span>🌅 07:04</span><span>🌇 21:56</span></div>
             </div>
         </div>
     </div>
@@ -176,116 +168,78 @@
         const startDate = new Date('2025-08-22T00:00:00');
         const endDate = new Date('2026-05-29T00:00:00');
         const totalDuration = endDate - startDate;
-
         let manualWeekOffset = 0;
 
         const weekData = {
-            27: { len: "36.6 cm", weight: "1.06 kg", fruit: { n: "coliflor", e: "🥦" }, anim: { n: "koala mini", e: "🐨" } },
-            28: { len: "37.9 cm", weight: "1.21 kg", fruit: { n: "coco", e: "🥥" }, anim: { n: "perezoso", e: "🦥" } },
-            29: { len: "39.2 cm", weight: "1.37 kg", fruit: { n: "calabaza", e: "🎃" }, anim: { n: "pato", e: "🦆" } },
-            30: { len: "40.5 cm", weight: "1.55 kg", fruit: { n: "col", e: "🥬" }, anim: { n: "nutria mini", e: "🦦" } },
-            31: { len: "41.8 cm", weight: "1.75 kg", fruit: { n: "calabacín", e: "🥒" }, anim: { n: "mono", e: "🐒" } },
-            32: { len: "43.0 cm", weight: "1.95 kg", fruit: { n: "apio", e: "🌿" }, anim: { n: "mapache mini", e: "🦝" } },
-            33: { len: "44.0 cm", weight: "2.16 kg", fruit: { n: "piña", e: "🍍" }, anim: { n: "zorrito", e: "🦊" } },
-            34: { len: "45.2 cm", weight: "2.37 kg", fruit: { n: "melón", e: "🍈" }, anim: { n: "canguro mini", e: "🦘" } },
-            35: { len: "46.3 cm", weight: "2.59 kg", fruit: { n: "melón verde", e: "🍈" }, anim: { n: "corderito", e: "🐑" } },
-            36: { len: "47.3 cm", weight: "2.81 kg", fruit: { n: "repollo", e: "🥬" }, anim: { n: "gato", e: "🐈" } },
-            37: { len: "48.3 cm", weight: "3.02 kg", fruit: { n: "puerro", e: "🥗" }, anim: { n: "perrito", e: "🐶" } },
-            38: { len: "49.2 cm", weight: "3.23 kg", fruit: { n: "papaya", e: "🥭" }, anim: { n: "cabrita", e: "🐐" } },
-            39: { len: "50.1 cm", weight: "3.43 kg", fruit: { n: "calabacín", e: "🥒" }, anim: { n: "foca junior", e: "🦭" } },
-            40: { len: "51.0 cm", weight: "3.61 kg", fruit: { n: "calabaza", e: "🎃" }, anim: { n: "guepardo", e: "🐆" } },
-            41: { len: "51.0 cm", weight: "3.61 kg", fruit: { n: "sandía", e: "🍉" }, anim: { n: "leoncito", e: "🦁" } }
+            27: { len: "36.6 cm", weight: "1.06 kg", fruit: { n: "coliflor", e: "🥦" }, anim: { n: "koala mini", e: "🐨" }, fact: "Sus ojos se abren por primera vez y ya puede parpadear. Está practicando la mirada de 'yo no he sido' cuando rompa algo." },
+            28: { len: "37.9 cm", weight: "1.21 kg", fruit: { n: "coco", e: "🥥" }, anim: { n: "perezoso", e: "🦥" }, fact: "¡Ya sueña! Su actividad cerebral es muy intensa mientras duerme (lo de la actividad cerebral lo hereda de mamá, ¡sin duda!)." },
+            29: { len: "39.2 cm", weight: "1.37 kg", fruit: { n: "calabaza", e: "🎃" }, anim: { n: "pato", e: "🦆" }, fact: "Sus huesos se están endureciendo, aunque el cráneo seguirá siendo flexible. Que aproveche para endurecer también los dientes, que no se parezca a papá por favor..." },
+            30: { len: "40.5 cm", weight: "1.55 kg", fruit: { n: "col", e: "🥬" }, anim: { n: "nutria mini", e: "🦦" }, fact: "Empieza a imitar movimientos respiratorios para practicar fuera del útero. Básicamente está ensayando para los berrinches." },
+            31: { len: "41.8 cm", weight: "1.75 kg", fruit: { n: "calabacín", e: "🥒" }, anim: { n: "mono", e: "🐒" }, fact: "Sus sentidos están alerta: ya diferencia entre luz tenue y oscuridad. ¡Malas noticias! Sabrá perfectamente cuándo son las 3 de la mañana para pedir fiesta." },
+            32: { len: "43.0 cm", weight: "1.95 kg", fruit: { n: "apio", e: "🌿" }, anim: { n: "mapache mini", e: "🦝" }, fact: "Ya tiene uñas en los dedos de las manos y de los pies. Otro mantenimiento semanal que sumar a la lista de tareas de mamá..." },
+            33: { len: "44.0 cm", weight: "2.16 kg", fruit: { n: "piña", e: "🍍" }, anim: { n: "zorrito", e: "🦊" }, fact: "Su sistema inmunológico empieza a recibir los anticuerpos de mamá. Es su primer escudo contra los virus... y contra los mofletes de las tías y abuelas 😒" },
+            34: { len: "45.2 cm", weight: "2.37 kg", fruit: { n: "melón", e: "🍈" }, anim: { n: "canguro mini", e: "🦘" }, fact: "Sus pulmones están casi listos para respirar. ¡Y para dar el *Do* de pecho en sus primeros conciertos nocturnos!" },
+            35: { len: "46.3 cm", weight: "2.59 kg", fruit: { n: "melón verde", e: "🍈" }, anim: { n: "corderito", e: "🐑" }, fact: "El cerebro crece rápido; ya tiene casi todas las neuronas que tendrá al nacer. Puede calcular lo segundos exactos que va a tardar mamá en ceder y cogerlo en el colo cuando llore un poquito." },
+            36: { len: "47.3 cm", weight: "2.81 kg", fruit: { n: "repollo", e: "🥬" }, anim: { n: "gato", e: "🐈" }, fact: "Está ganando una capa de grasa que le ayudará a mantener el calor fuera. Es su perdición para los '¡Ay, qué mofletitos tiene Luca!'" },
+            37: { len: "48.3 cm", weight: "3.02 kg", fruit: { n: "puerro", e: "🥗" }, anim: { n: "perrito", e: "🐶" }, fact: "¡Ya se considera a término temprano! Sus órganos pueden funcionar solos. Está en la puerta con la maleta hecha, esperando el 'Uber' al hospital." },
+            38: { len: "49.2 cm", weight: "3.23 kg", fruit: { n: "papaya", e: "🥭" }, anim: { n: "cabrita", e: "🐐" }, fact: "El color de sus ojos es un misterio; se definirá meses después de nacer." },
+            39: { len: "50.1 cm", weight: "3.43 kg", fruit: { n: "calabacín", e: "🥒" }, anim: { n: "foca junior", e: "🦭" }, fact: "Sus intestinos están acumulando el meconio, su primera digestión. 🧔🏻‍♂️ 'Tranquilos todos, estou preparado'." },
+            40: { len: "51.0 cm", weight: "3.61 kg", fruit: { n: "calabaza", e: "🎃" }, anim: { n: "guepardo", e: "🐆" }, fact: "Luca tiene el tamaño perfecto para conocer el mundo. O me sacáis, o me mudo de piso, ¡porque en este dúplex ya no se cabe!" },
+            41: { len: "51.0 cm", weight: "3.61 kg", fruit: { n: "sandía", e: "🍉" }, anim: { n: "leoncito", e: "🦁" }, fact: "Está muy cómodo, parece mamá, le gusta demasiado el sofá y que le lleven el desayuno a la cama..." }
         };
 
         const ctx = document.getElementById('progressChart').getContext('2d');
         const gradient = ctx.createLinearGradient(0, 0, 0, 400);
         gradient.addColorStop(0, '#6366f1'); gradient.addColorStop(1, '#a855f7');
+        const progressChart = new Chart(ctx, { type: 'doughnut', data: { datasets: [{ data: [0, 100], backgroundColor: [gradient, '#1f2937'], borderWidth: 0, cutout: '82%', borderRadius: 25 }] }, options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { tooltip: { enabled: false }, legend: { display: false } } } });
 
-        const progressChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: { datasets: [{ data: [0, 100], backgroundColor: [gradient, '#1f2937'], borderWidth: 0, cutout: '82%', borderRadius: 25 }] },
-            options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { tooltip: { enabled: false }, legend: { display: false } } }
-        });
-
-        function changeWeek(dir) {
-            const now = new Date();
-            const actualWeek = Math.floor((now - startDate) / (1000 * 60 * 60 * 24 * 7));
-            const targetWeek = (actualWeek + manualWeekOffset) + dir;
-            if (targetWeek >= 27 && targetWeek <= 41) {
-                manualWeekOffset += dir;
-                update();
-            }
-        }
+        function toggleModal(show) { document.getElementById('modal-info').style.display = show ? 'flex' : 'none'; }
+        function changeWeek(dir) { const now = new Date(); const totalDaysElapsed = Math.floor((now - startDate) / (1000 * 60 * 60 * 24)); const actualWeek = Math.floor(totalDaysElapsed / 7); const targetWeek = (actualWeek + manualWeekOffset) + dir; if (targetWeek >= 27 && targetWeek <= 41) { manualWeekOffset += dir; update(); } }
 
         function update() {
-			const now = new Date();
-			const elapsed = now - startDate;
-			const remaining = Math.max(0, endDate - now);
-			const progress = Math.min(Math.max((elapsed / totalDuration) * 100, 0), 100);
+            const now = new Date();
+            const elapsed = now - startDate;
+            const remaining = Math.max(0, endDate - now);
+            const progress = Math.min(Math.max((elapsed / totalDuration) * 100, 0), 100);
+            progressChart.data.datasets[0].data = [progress, 100 - progress];
+            progressChart.update('none');
+            document.getElementById('percentage-center').innerText = progress.toFixed(2) + '%';
+            document.getElementById('progress-fill').style.width = progress + '%';
+            
+            const totalDaysElapsed = Math.floor(elapsed / (1000 * 60 * 60 * 24));
+            const actualWeek = Math.floor(totalDaysElapsed / 7);
+            const extraDays = totalDaysElapsed % 7;
+            
+            let displayWeek = actualWeek + manualWeekOffset;
+            let dataWeek = (displayWeek < 27) ? 27 : (displayWeek > 41 ? 41 : displayWeek);
+            const currentData = weekData[dataWeek];
+            const item = document.getElementById('category-select').value === 'fruits' ? currentData.fruit : currentData.anim;
+            const weekLabel = document.getElementById('current-week-label');
+            
+            let daysSuffix = (manualWeekOffset === 0 && extraDays > 0) ? ` +${extraDays}` : "";
+            weekLabel.innerText = (manualWeekOffset !== 0 ? "⚠️ " : "") + `Semana ${displayWeek}${daysSuffix}`;
+            if (manualWeekOffset !== 0) weekLabel.classList.add('not-current'); else weekLabel.classList.remove('not-current');
+            
+            document.getElementById('compare-name').innerText = item.n;
+            document.getElementById('compare-emoji').innerText = item.e;
+            document.getElementById('meas-len').innerText = currentData.len;
+            document.getElementById('meas-weight').innerText = currentData.weight;
+            
+            // Lógica de intriga: Bloquear frases de semanas futuras
+            if (displayWeek > actualWeek) {
+                document.getElementById('weekly-fact').innerHTML = `🔒 Ya te gustaría ver la frase de esta semana, pero para eso vas a tener que esperar hasta la <b>semana ${displayWeek}</b>.`;
+            } else {
+                document.getElementById('weekly-fact').innerText = currentData.fact;
+            }
 
-			// Actualizar gráfico
-			progressChart.data.datasets[0].data = [progress, 100 - progress];
-			progressChart.update('none');
-			document.getElementById('percentage-center').innerText = progress.toFixed(2) + '%';
-			document.getElementById('progress-fill').style.width = progress + '%';
-
-			// CÁLCULO DE SEMANAS Y DÍAS (La clave de tu petición)
-			const totalDaysElapsed = Math.floor(elapsed / (1000 * 60 * 60 * 24));
-			const actualWeek = Math.floor(totalDaysElapsed / 7);
-			const extraDays = totalDaysElapsed % 7; // Los días que sobran de la semana
-			
-			let displayWeek = actualWeek + manualWeekOffset;
-			
-			// Para los datos del JSON (semana 27 a 41)
-			let dataWeek = displayWeek;
-			if (dataWeek < 27) dataWeek = 27;
-			if (dataWeek > 41) dataWeek = 41;
-
-			const currentData = weekData[dataWeek];
-			const category = document.getElementById('category-select').value;
-			const item = category === 'fruits' ? currentData.fruit : currentData.anim;
-
-			// LÓGICA DE LA ETIQUETA (Badge)
-			const weekLabel = document.getElementById('current-week-label');
-			
-			// Si estamos viendo la semana real, añadimos el +X
-			// Si estamos navegando manualmente (offset != 0), ocultamos el +X para no confundir
-			let daysSuffix = (manualWeekOffset === 0 && extraDays > 0) ? ` +${extraDays}` : "";
-			
-			if (manualWeekOffset !== 0) {
-				weekLabel.innerText = `⚠️ Semana ${displayWeek}`;
-				weekLabel.classList.add('not-current');
-			} else {
-				weekLabel.innerText = `Semana ${displayWeek}${daysSuffix}`;
-				weekLabel.classList.remove('not-current');
-			}
-
-			// Actualización de textos y mediciones
-			document.getElementById('compare-name').innerText = item.n;
-			document.getElementById('compare-emoji').innerText = item.e;
-			document.getElementById('meas-len').innerText = currentData.len;
-			document.getElementById('meas-weight').innerText = currentData.weight;
-
-			const formatTime = (ms) => {
-				const totalSec = Math.floor(ms / 1000);
-				const d = Math.floor(totalSec / 86400);
-				const h = String(Math.floor((totalSec % 86400) / 3600)).padStart(2, '0');
-				const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
-				const s = String(totalSec % 60).padStart(2, '0');
-				return { days: `${d} días`, hms: `${h}:${m}:${s}` };
-			};
-
-			const p = formatTime(elapsed); 
-			const l = formatTime(remaining);
-			document.getElementById('passed-days').innerText = p.days;
-			document.getElementById('passed-hms').innerText = p.hms;
-			document.getElementById('left-days').innerText = l.days;
-			document.getElementById('left-hms').innerText = l.hms;
-		}
+            const formatTime = (ms) => { const totalSec = Math.floor(ms / 1000); const d = Math.floor(totalSec / 86400); const h = String(Math.floor((totalSec % 86400) / 3600)).padStart(2, '0'); const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0'); const s = String(totalSec % 60).padStart(2, '0'); return { days: `${d} días`, hms: `${h}:${m}:${s}` }; };
+            const p = formatTime(elapsed); const l = formatTime(remaining);
+            document.getElementById('passed-days').innerText = p.days; document.getElementById('passed-hms').innerText = p.hms;
+            document.getElementById('left-days').innerText = l.days; document.getElementById('left-hms').innerText = l.hms;
+        }
 
         document.getElementById('category-select').addEventListener('change', update);
-        setInterval(update, 1000);
-        update();
+        setInterval(update, 1000); update();
     </script>
 </body>
 </html>
