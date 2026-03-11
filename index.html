@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -12,6 +11,7 @@
             --primary: #6366f1;
             --accent: #a855f7;
             --warning: #f59e0b;
+            --success: #22c55e;
             --bg: #030712;
             --card: rgba(17, 24, 39, 0.8);
             --track: #1f2937;
@@ -61,12 +61,21 @@
 
         select { background: transparent; color: #6366f1; border: none; font-size: 0.6rem; font-weight: 600; outline: none; cursor: pointer; text-transform: uppercase; }
 
-        .week-badge { display: inline-block; margin: 0.8rem auto; background: rgba(99, 102, 241, 0.15); color: var(--primary); padding: 4px 14px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; border: 1px solid rgba(99, 102, 241, 0.3); }
+        .week-badge { display: inline-block; margin: 0.8rem auto; background: rgba(99, 102, 241, 0.15); color: var(--primary); padding: 4px 14px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; border: 1px solid rgba(99, 102, 241, 0.3); transition: all 0.3s ease; }
         .week-badge.not-current { background: rgba(245, 158, 11, 0.15); color: var(--warning); border-color: rgba(245, 158, 11, 0.4); }
+        .week-badge.completed { background: rgba(34, 197, 94, 0.15); color: var(--success); border-color: rgba(34, 197, 94, 0.4); }
 
-        .measurements { display: flex; justify-content: center; gap: 15px; margin-bottom: 0.8rem; }
-        .meas-val { font-size: 0.9rem; font-weight: 600; color: white; display: block; }
-        .meas-lab { font-size: 0.6rem; color: #64748b; text-transform: uppercase; }
+        /* Nuevos estilos para 3 columnas de medidas */
+        .measurements { 
+            display: grid; 
+            grid-template-columns: 1fr auto 1fr auto 1fr; 
+            align-items: center; 
+            margin-bottom: 0.8rem; 
+        }
+        .meas-item { display: flex; flex-direction: column; align-items: center; }
+        .meas-val { font-size: 0.85rem; font-weight: 600; color: white; display: block; }
+        .meas-lab { font-size: 0.55rem; color: #64748b; text-transform: uppercase; margin-top: 2px; }
+        .divider { width: 1px; background: rgba(255,255,255,0.1); height: 20px; }
 
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1rem; }
         .stat-card { background: rgba(255, 255, 255, 0.03); padding: 10px 5px; border-radius: 18px; border: 1px solid rgba(255, 255, 255, 0.03); }
@@ -123,9 +132,20 @@
         <div id="current-week-label" class="week-badge">Semana --</div>
 
         <div class="measurements">
-            <div class="meas-item"><span id="meas-len" class="meas-val">--</span><span class="meas-lab">Longitud</span></div>
-            <div style="width: 1px; background: rgba(255,255,255,0.1); height: 20px; align-self: center;"></div>
-            <div class="meas-item"><span id="meas-weight" class="meas-val">--</span><span class="meas-lab">Peso est.</span></div>
+            <div class="meas-item">
+                <span id="meas-len" class="meas-val">--</span>
+                <span class="meas-lab">Longitud</span>
+            </div>
+            <div class="divider"></div>
+            <div class="meas-item">
+                <span id="meas-weight" class="meas-val">--</span>
+                <span class="meas-lab">Peso</span>
+            </div>
+            <div class="divider"></div>
+            <div class="meas-item">
+                <span id="meas-bpm" class="meas-val">--</span>
+                <span class="meas-lab">Pulso (bpm)</span>
+            </div>
         </div>
 
         <div class="fact-container">
@@ -172,48 +192,48 @@
         let manualWeekOffset = 0;
 
 		const weekData = {
-            0: { len: "0 mm", weight: "0 g", fruit: { n: "un sueño", e: "✨" }, anim: { n: "un deseo", e: "💭" }, fact: "Todo empieza con una ilusión. Esta semana el cuerpo de mamá se prepara para la aventura más increíble. Papá, ¡ánimo!" },
-            1: { len: "0 mm", weight: "0 g", fruit: { n: "una idea", e: "💡" }, anim: { n: "una chispa", e: "⚡" }, fact: "Es el inicio del ciclo. Aunque aún no estás aquí, el universo ya está conspirando para que Luca llegue pronto, ¡aunque en este momento no tenemos ni idea de lo que está pasando!" },
-            2: { len: "0.1 mm", weight: "0 g", fruit: { n: "pizca de canela", e: "🟤" }, anim: { n: "polen", e: "🌸" }, fact: "¡Momento mágico! El óvulo y el espermatozoide se encuentran. En este instante se decide toda la genética. ¿Dónde está el catálogo para elegir? Porque como tengas el carácter de mamá..." },
-            3: { len: "1.5 mm", weight: "0 g", fruit: { n: "semilla de fresa", e: "🍓" }, anim: { n: "tardígrado", e: "👾" }, fact: "¡Ya te has instalado! Te has implantado en el útero, tu primer hogar (y el más grande hasta que nos mudemos del piso)" },
-            4: { len: "1.5 mm", weight: "0 g", fruit: { n: "semilla de chía", e: "🌱" }, anim: { n: "caballito de mar", e: "🧬" }, fact: "Eres apenas un granito de energía, pero ya estás formando las capas que se convertirán en todos tus órganos. A traballar un pouco, non van facer teus pais todo!" },
-            5: { len: "2.0 mm", weight: "0 g", fruit: { n: "semilla de sésamo", e: "⚪" }, anim: { n: "renacuajo", e: "🐸" }, fact: "¡Pum-pum! Tu corazoncito empieza a latir por primera vez. ¡Nos acabamos de enterar que estás con nosotros!" },
-            6: { len: "5.0 mm", weight: "0 g", fruit: { n: "guisante", e: "🟢" }, anim: { n: "mariquita", e: "🐞" }, fact: "Ya se empiezan a intuir tus ojitos y tus extremidades. Eres pequeño como un guisante pero ocupas todo nuestro pensamiento. Aunque no diremos nada, queremos ir de viaje a Eslovenia sin que nadie nos rompa la cabeza" },
-            7: { len: "9.5 mm", weight: "0 g", fruit: { n: "arándano", e: "🫐" }, anim: { n: "abeja", e: "🐝" }, fact: "Tu cerebro crece a una velocidad increíble. Estás creando miles de neuronas cada minuto para ser el más listo de la casa (después de papá claro). ¡Esta semana se enteran tus abuelos y tus tías!" },
-            8: { len: "1.6 cm", weight: "0 g", fruit: { n: "frambuesa", e: "🍇" }, anim: { n: "caracolito", e: "🐌" }, fact: "Tus manos y pies ya tienen dedos, aunque todavía parecen pequeñas aletas. Estás preparándote para empezar a nadar. Tus queridos abuelos tienen piscina, así que aprende bien." },
-            9: { len: "2.3 cm", weight: "0 g", fruit: { n: "cereza", e: "🍒" }, anim: { n: "abejorro", e: "🐝" }, fact: "Ya no eres un embrión, ¡ahora eres oficialmente un feto! Tus articulaciones empiezan a funcionar y no paras de moverte. Papá tampoco para quieto, así que no te preocupes." },
-            10: { len: "3.1 cm", weight: "35 g", fruit: { n: "fresa", e: "🍓" }, anim: { n: "mariposa", e: "🦋" }, fact: "Tus órganos vitales ya están en su sitio y funcionando. Eres una pequeña obra maestra en miniatura. Mamá está trabajando 24/7 para ello." },
-            11: { len: "4.1 cm", weight: "45 g", fruit: { n: "higo", e: "🥯" }, anim: { n: "rana", e: "🐸" }, fact: "Te pasas el día estirándote y dando saltitos. Estás tan cómodo en tu piscina particular que no dejas de practicar gimnasia. Normal, con el pedazo dúplex que te tiene instalado tu madre..." },
-            12: { len: "5.4 cm", weight: "58 g", fruit: { n: "ciruela", e: "🟣" }, anim: { n: "colibrí", e: "🐦" }, fact: "Tus riñones ya funcionan y tus reflejos están apareciendo. Si algo te toca la palma de la mano, ¡ya intentas cerrarla! Carallo, por toma todos entenden, hasta con 12 semanas" },
-            13: { len: "6.7 cm", weight: "73 g", fruit: { n: "limón", e: "🍋" }, anim: { n: "pollito", e: "🐥" }, fact: "¡Fin del primer trimestre! Ya tienes huellas en las yemas de tus dedos; eres un ser único e irrepetible. Eso espero, y que no tengas los TOCs que dicen que tiene papá..." },
-            14: { len: "14.7 cm", weight: "93 g", fruit: { n: "melocotón", e: "🍑" }, anim: { n: "hámster", e: "🐹" }, fact: "Tus rasgos faciales se están recolocando. Ya puedes hacer gestos y hasta chuparte el dedo cuando tienes sueño." },
-            15: { len: "16.7 cm", weight: "117 g", fruit: { n: "manzana", e: "🍎" }, anim: { n: "erizo", e: "🦔" }, fact: "Tu piel es todavía muy fina, pero ya te está creciendo un pelito muy suave llamado lanugo para mantenerte caliente. En este paso si te pareces a mamá te irá mejor" },
-            16: { len: "18.6 cm", weight: "146 g", fruit: { n: "aguacate", e: "🥑" }, anim: { n: "ardilla", e: "🐿️" }, fact: "¡Primeras pataditas! Mamá pronto empezará a sentir tus movimientos. Es tu forma de decirnos 'hola, estoy aquí'. Y de que cada vez que mamá dice que te estás moviendo y ponemos la mano haces como que no estás." },
-            17: { len: "20.4 cm", weight: "181 g", fruit: { n: "granada", e: "🍎" }, anim: { n: "cobaya", e: "🐹" }, fact: "Tus oídos están casi formados. Ya puedes escuchar los latidos del corazón de mamá y su voz cuando te habla. ''Luca. Habla papá. Te compadezco. Ánimo, prometo sacarte de ahí" },
-            18: { len: "22.2 cm", weight: "223 g", fruit: { n: "pimiento", e: "🫑" }, anim: { n: "ardilla roja", e: "🐿️" }, fact: "Estás muy activo y tus huesos se están volviendo más fuertes. No te pases durmiendo ahora, que cuando salgas también hay que dormir eh." },
-            19: { len: "24.0 cm", weight: "273 g", fruit: { n: "mango", e: "🥭" }, anim: { n: "patito", e: "🦆" }, fact: "Se está formando la vérnix, una capa protectora en tu piel. Estás preparándote para ponerte guapo para tu gran estreno. Tendrás fotos para parar un tren, a ver si mamá tiene espacio libre en su móvil y se digna a subir las cosas a la NAS algún día..." },
-            20: { len: "25.7 cm", weight: "331 g", fruit: { n: "plátano", e: "🍌" }, anim: { n: "perrito pradera", e: "🐿️" }, fact: "¡Mitad de camino superada! Ya hemos recorrido 20 semanas juntos. ¡Ya empieza la cuenta atrás!" },
-            21: { len: "27.4 cm", weight: "399 g", fruit: { n: "patata", e: "🥔" }, anim: { n: "gatito", e: "🐱" }, fact: "Tus papilas gustativas están desarrolladas. ¡Ya empiezas a saborear lo que mamá come a través del líquido amniótico! Cuando mamá te dé potitos dile que no estás acostumbrado a eso, que preferías chocolate que estaba más rico." },
-            22: { len: "29 cm", weight: "478 g", fruit: { n: "mazorca", e: "🌽" }, anim: { n: "conejo", e: "🐰" }, fact: "Tus cejas y pestañas ya están en su sitio. Tu cara ya tiene el aspecto que veremos el día que nazcas. Si eres guapo el mérito es de papá, sino la culpa es de mamá que es la que está trabajando las 24 horas" },
-            23: { len: "30.6 cm", weight: "568 g", fruit: { n: "pomelo", e: "🍊" }, anim: { n: "hurón", e: "🦦" }, fact: "Tu piel se está volviendo menos transparente y empiezas a ganar un poquito de peso. Mamá empieza a decir que le moviste el centro de gravedad, tu un hurón, y ella un pingüino." },
-            24: { len: "32.2 cm", weight: "670 g", fruit: { n: "berenjena", e: "🍆" }, anim: { n: "zorrito", e: "🦊" }, fact: "¡Ya nos oyes perfectamente! Si papá te habla, hazle caso. Si lo hace mamá... no vas a ser capaz porque no se calla en todo el día" },
-            25: { len: "33.7 cm", weight: "785 g", fruit: { n: "uvas", e: "🍇" }, anim: { n: "chinchilla", e: "🐭" }, fact: "Tus pulmones están desarrollando los vasos sanguíneos para poder respirar aire pronto. Estás ensayando muy bien. Cuidadito con los lloros eh." },
-            26: { len: "35.1 cm", weight: "913 g", fruit: { n: "nabo", e: "🥕" }, anim: { n: "zorro desierto", e: "🦊" }, fact: "Tus ojos empiezan a entreabrirse. Muy pronto podrás ver la luz que entra desde fuera. Con suerte hará sol algún día, porque tu madre y la luz..." },
-            27: { len: "36.6 cm", weight: "1.06 kg", fruit: { n: "coliflor", e: "🥦" }, anim: { n: "koala mini", e: "🐨" }, fact: "Sus ojos se abren por primera vez y ya puede parpadear. Está practicando la mirada de 'yo no he sido' cuando rompa algo." },
-            28: { len: "37.9 cm", weight: "1.21 kg", fruit: { n: "coco", e: "🥥" }, anim: { n: "perezoso", e: "🦥" }, fact: "¡Ya sueña! Su actividad cerebral es muy intensa mientras duerme (lo de la actividad cerebral lo hereda de mamá, ¡sin duda!)." },
-            29: { len: "39.2 cm", weight: "1.37 kg", fruit: { n: "calabaza", e: "🎃" }, anim: { n: "pato", e: "🦆" }, fact: "Sus huesos se están endureciendo, aunque el cráneo seguirá siendo flexible. Que aproveche para endurecer también los dientes, que no se parezca a papá por favor..." },
-            30: { len: "40.5 cm", weight: "1.55 kg", fruit: { n: "col", e: "🥬" }, anim: { n: "nutria mini", e: "🦦" }, fact: "Empieza a imitar movimientos respiratorios para practicar fuera del útero. Básicamente está ensayando para los berrinches." },
-            31: { len: "41.8 cm", weight: "1.75 kg", fruit: { n: "calabacín", e: "🥒" }, anim: { n: "mono", e: "🐒" }, fact: "Sus sentidos están alerta: ya diferencia entre luz tenue y oscuridad. ¡Malas noticias! Sabrá perfectamente cuándo son las 3 de la mañana para pedir fiesta." },
-            32: { len: "43.0 cm", weight: "1.95 kg", fruit: { n: "apio", e: "🌿" }, anim: { n: "mapache mini", e: "🦝" }, fact: "Ya tiene uñas en los dedos de las manos y de los pies. Otro mantenimiento semanal que sumar a la lista de tareas de mamá..." },
-            33: { len: "44.0 cm", weight: "2.16 kg", fruit: { n: "piña", e: "🍍" }, anim: { n: "zorrito", e: "🦊" }, fact: "Su sistema inmunológico empieza a recibir los anticuerpos de mamá. Es su primer escudo contra los virus... y contra los mofletes de las tías y abuelas 😒" },
-            34: { len: "45.2 cm", weight: "2.37 kg", fruit: { n: "melón", e: "🍈" }, anim: { n: "canguro mini", e: "🦘" }, fact: "Sus pulmones están casi listos para respirar. ¡Y para dar el *Do* de pecho en sus primeros conciertos nocturnos!" },
-            35: { len: "46.3 cm", weight: "2.59 kg", fruit: { n: "melón verde", e: "🍈" }, anim: { n: "corderito", e: "🐑" }, fact: "El cerebro crece rápido; ya tiene casi todas las neuronas que tendrá al nacer. Puede calcular lo segundos exactos que va a tardar mamá en ceder y cogerlo en el colo cuando llore un poquito." },
-            36: { len: "47.3 cm", weight: "2.81 kg", fruit: { n: "repollo", e: "🥬" }, anim: { n: "gato", e: "🐈" }, fact: "Está ganando una capa de grasa que le ayudará a mantener el calor fuera. Es su perdición para los '¡Ay, qué mofletitos tiene Luca!'" },
-            37: { len: "48.3 cm", weight: "3.02 kg", fruit: { n: "puerro", e: "🥗" }, anim: { n: "perrito", e: "🐶" }, fact: "¡Ya se considera a término temprano! Sus órganos pueden funcionar solos. Está en la puerta con la maleta hecha, esperando el 'Uber' al hospital." },
-            38: { len: "49.2 cm", weight: "3.23 kg", fruit: { n: "papaya", e: "🥭" }, anim: { n: "cabrita", e: "🐐" }, fact: "El color de sus ojos es un misterio; se definirá meses después de nacer." },
-            39: { len: "50.1 cm", weight: "3.43 kg", fruit: { n: "calabacín", e: "🥒" }, anim: { n: "foca junior", e: "🦭" }, fact: "Sus intestinos están acumulando el meconio, su primera digestión. 🧔🏻‍♂️ 'Tranquilos todos, estou preparado'." },
-            40: { len: "51.0 cm", weight: "3.61 kg", fruit: { n: "calabaza", e: "🎃" }, anim: { n: "guepardo", e: "🐆" }, fact: "Luca tiene el tamaño perfecto para conocer el mundo. O me sacáis, o me mudo de piso, ¡porque en este dúplex ya no se cabe!" },
-            41: { len: "51.0 cm", weight: "3.61 kg", fruit: { n: "sandía", e: "🍉" }, anim: { n: "leoncito", e: "🦁" }, fact: "Está muy cómodo, parece mamá, le gusta demasiado el sofá y que le lleven el desayuno a la cama..." }
+            0: { len: "0", weight: "0", bpm: "0", fruit: { n: "un sueño", e: "✨" }, anim: { n: "un deseo", e: "💭" }, fact: "'22/08/2025: Todo empieza con una ilusión. Esta semana el cuerpo de mamá se prepara para la aventura más increíble.' Papá, ¡ánimo!" },
+            1: { len: "0", weight: "0", bpm: "0", fruit: { n: "una idea", e: "💡" }, anim: { n: "una chispa", e: "⚡" }, fact: "'29/08/2025: Es el inicio del ciclo. Aunque aún no estás aquí, el universo ya está conspirando para tu llegada.' ¡Aínda que de momento non temos nin a máis remota idea do que vai pasar!" },
+            2: { len: "0", weight: "0", bpm: "0", fruit: { n: "pizca de canela", e: "🟤" }, anim: { n: "polen", e: "🌸" }, fact: "'05/09/2025: ¡Momento mágico! El óvulo y el espermatozoide se encuentran. En este instante se decide toda la genética.' Onde está o catálogo para poder escoller? Porque como saias co carácter de mamá..." },
+            3: { len: "1.5 mm", weight: "0", bpm: "0", fruit: { n: "semilla de fresa", e: "🍓" }, anim: { n: "tardígrado", e: "👾" }, fact: "'12/09/2025: ¡Ya te has instalado! Te has implantado en el útero, tu primer hogar' (E o máis grande que vas ter hasta que en algún momento nos mudemos do piso)" },
+            4: { len: "1.5 mm", weight: "0", bpm: "0", fruit: { n: "semilla de chía", e: "🌱" }, anim: { n: "caballito de mar", e: "🧬" }, fact: "'19/09/2025: Eres apenas un granito de energía, pero ya estás formando las capas que se convertirán en todos tus órganos.' A traballar un pouco, non van facer teus pais todo!" },
+            5: { len: "2.0 mm", weight: "0", bpm: "100-115", fruit: { n: "semilla de sésamo", e: "⚪" }, anim: { n: "renacuajo", e: "🐸" }, fact: "'26/09/2025: ¡Pum-pum! Tu corazoncito empieza a latir por primera vez.' Acabamos de enterarnos de que nunca máis imos volver a ser solo dous!" },
+            6: { len: "5.0 mm", weight: "0", bpm: "115-130", fruit: { n: "guisante", e: "🟢" }, anim: { n: "mariquita", e: "🐞" }, fact: "'03/10/2025: Ya se empiezan a intuir tus ojitos y tus extremidades. Eres pequeño como un guisante pero ocupas todo nuestro pensamiento.' Pero shhh, de momento é un secreto, queremos ir de viaxe a Eslovenia sin que nadie nos rompa a cabeza" },
+            7: { len: "9.5 mm", weight: "0", bpm: "130-150", fruit: { n: "arándano", e: "🫐" }, anim: { n: "abeja", e: "🐝" }, fact: "'10/10/2025: Tu cerebro crece a una velocidad increíble. Estás creando miles de neuronas cada minuto para ser el más listo de la casa' (Despois de papá claro). O 11 de octubre dámoslle a gran noticia aos avós e ás tías! Se os veees...." },
+            8: { len: "1.6 cm", weight: "0", bpm: "150-170", fruit: { n: "frambuesa", e: "🍇" }, anim: { n: "caracolito", e: "🐌" }, fact: "'17/10/2025: Tus manos y pies ya tienen dedos, aunque todavía parecen pequeñas aletas. Estás preparándote para empezar a nadar.' Os teus queridos avós teñen piscina, así que... aprende ben a nadar! Ademáis, esta semana imos verte por primeira vez nunha eco e escoitaremos o teu latido. Era a confirmación absoluta, casi non nolo creemos!" },
+            9: { len: "2.3 cm", weight: "2 g", bpm: "155-175", fruit: { n: "cereza", e: "🍒" }, anim: { n: "abejorro", e: "🐝" }, fact: "'24/10/2025: Ya no eres un embrión, ¡ahora eres oficialmente un feto! Tus articulaciones empiezan a funcionar y no paras de moverte.' Papá tampouco para quieto, así que non te preocupes." },
+            10: { len: "3.1 cm", weight: "4 g", bpm: "160-180", fruit: { n: "fresa", e: "🍓" }, anim: { n: "mariposa", e: "🦋" }, fact: "'31/10/2025: Tus órganos vitales ya están en su sitio y funcionando. Eres una pequeña obra maestra en miniatura.' Mamá está traballando 24/7 para eso." },
+            11: { len: "4.1 cm", weight: "7 g", bpm: "150-170", fruit: { n: "higo", e: "🥯" }, anim: { n: "rana", e: "🐸" }, fact: "'07/11/2025: Te pasas el día estirándote y dando saltitos. Estás tan cómodo en tu piscina particular que no dejas de practicar gimnasia.' Normal, co pedazo dúplex que che ten instalado túa nai..." },
+            12: { len: "5.4 cm", weight: "14 g", bpm: "120-160", fruit: { n: "ciruela", e: "🟣" }, anim: { n: "colibrí", e: "🐦" }, fact: "'14/11/2025: Tus riñones ya funcionan y tus reflejos están apareciendo. Si algo te toca la palma de la mano, ¡ya intentas cerrarla!' Carallo, por toma todos entenden, hasta con 12 semanas" },
+            13: { len: "6.7 cm", weight: "23 g", bpm: "120-160", fruit: { n: "limón", e: "🍋" }, anim: { n: "pollito", e: "🐥" }, fact: "'21/11/2025: ¡Fin del primer trimestre! Ya tienes huellas en las yemas de tus dedos; eres un ser único e irrepetible.' Eso espero, que están todos preocupados porque teñas os TOCs que inventan por ahí que ten teu pai..." },
+            14: { len: "14.7 cm", weight: "43 g", bpm: "120-160", fruit: { n: "melocotón", e: "🍑" }, anim: { n: "hámster", e: "🐹" }, fact: "'28/11/2025: Tus rasgos faciales se están recolocando. Ya puedes hacer gestos y hasta chuparte el dedo cuando tienes sueño.' Practica ben a comer o dedo cando teñas fame, que vas listo como lle pidas comida a papá" },
+            15: { len: "16.7 cm", weight: "70 g", bpm: "120-160", fruit: { n: "manzana", e: "🍎" }, anim: { n: "erizo", e: "🦔" }, fact: "'05/12/2025: Tu piel es todavía muy fina, pero ya te está creciendo un pelito muy suave llamado lanugo para mantenerte caliente.' En este paso, si te pareces a mamá irache mellor" },
+            16: { len: "18.6 cm", weight: "100 g", bpm: "120-160", fruit: { n: "aguacate", e: "🥑" }, anim: { n: "ardilla", e: "🐿️" }, fact: "'12/12/2025: ¡Primeras pataditas! Mamá pronto empezará a sentir tus movimientos. Es tu forma de decirnos: hola, estoy aquí.' E de que cada vez que mamá di que te estás movendo e poñemos a man paras, nin que estuveras xogando ao escondite..." },
+            17: { len: "20.4 cm", weight: "140 g", bpm: "120-160", fruit: { n: "granada", e: "🍎" }, anim: { n: "cobaya", e: "🐹" }, fact: "'19/12/2025: Tus oídos están casi formados. Ya puedes escuchar los latidos del corazón de mamá y su voz cuando te habla.' Susurrando: Lucaa. Fala papá. Compadézote. Ánimo, prometo sacarte de ahí" },
+            18: { len: "22.2 cm", weight: "190 g", bpm: "120-160", fruit: { n: "pimiento", e: "🫑" }, anim: { n: "ardilla roja", e: "🐿️" }, fact: "'26/12/2025: Estás muy activo y tus huesos se están volviendo más fuertes y necesitas dormir.' Non te pases durmindo ahora, que cando saias tamén hai que durmir eh!" },
+            19: { len: "24.0 cm", weight: "240 g", bpm: "120-160", fruit: { n: "mango", e: "🥭" }, anim: { n: "patito", e: "🦆" }, fact: "'02/01/2026: Se está formando la vérnix, una capa protectora en tu piel. Estás preparándote para ponerte guapo para tu gran estreno.' Terás fotos para parar un tren, a ver ahora si mamá ten espacio libre no móvil e se digna a subir as cousas á NAS algún día..." },
+            20: { len: "25.7 cm", weight: "300 g", bpm: "120-160", fruit: { n: "plátano", e: "🍌" }, anim: { n: "perrito pradera", e: "🐿️" }, fact: "'09/01/2026: ¡Mitad de camino superado! Ya hemos recorrido 20 semanas juntos.' Tic-tac, empeza a conta atrás!" },
+            21: { len: "27.4 cm", weight: "360 g", bpm: "120-160", fruit: { n: "patata", e: "🥔" }, anim: { n: "gatito", e: "🐱" }, fact: "'16/01/2026: Tus papilas gustativas están desarrolladas. ¡Ya empiezas a saborear lo que mamá come a través del líquido amniótico!' Cando mamá che dé potitos, dille que non estás acostumbrado, que preferías chocolate que estaba máis rico." },
+            22: { len: "29.0 cm", weight: "430 g", bpm: "120-160", fruit: { n: "mazorca", e: "🌽" }, anim: { n: "conejo", e: "🐰" }, fact: "'23/01/2026: Tus cejas y pestañas ya están en su sitio. Tu cara ya tiene el aspecto que veremos el día que nazcas.' Se eres guapo o mérito é de papá, senón, a culpa é de mamá que é a que está traballando as 24 horas" },
+            23: { len: "30.6 cm", weight: "500 g", bpm: "120-160", fruit: { n: "pomelo", e: "🍊" }, anim: { n: "hurón", e: "🦦" }, fact: "'30/01/2026: Tu piel se está volviendo menos transparente y empiezas a ganar un poquito de peso.' Mamá empeza a decir que lle moviche o centro de gravedad. Ahora serás un hurón, e mamá... un pingüino..." },
+            24: { len: "32.2 cm", weight: "600 g", bpm: "120-160", fruit: { n: "berenjena", e: "🍆" }, anim: { n: "zorrito", e: "🦊" }, fact: "'06/02/2026: ¡Ya nos oyes perfectamente!' Si papá che fala, faille caso. Si é mamá... non creo que seas capaz, non cala en todo o día!" },
+            25: { len: "33.7 cm", weight: "660 g", bpm: "120-160", fruit: { n: "uvas", e: "🍇" }, anim: { n: "chinchilla", e: "🐭" }, fact: "'13/02/2026: Tus pulmones están desarrollando los vasos sanguíneos para poder respirar aire pronto.' Cuidadito cos choros eh!" },
+            26: { len: "35.1 cm", weight: "760 g", bpm: "120-160", fruit: { n: "nabo", e: "🥕" }, anim: { n: "zorro desierto", e: "🦊" }, fact: "'20/02/2026: Tus ojos empiezan a entreabrirse. Muy pronto podrás ver la luz que entra desde fuera.' Con suerte, fará sol algún día, porque túa nai e a luz..." },
+            27: { len: "36.6 cm", weight: "875 g", bpm: "120-160", fruit: { n: "coliflor", e: "🥦" }, anim: { n: "koala mini", e: "🐨" }, fact: "'27/02/2026: Sus ojos se abren por primera vez y ya puede parpadear. Está practicando la mirada de 'yo no he sido' cuando rompa algo.' Aínda que che vai costar superar a San David" },
+            28: { len: "37.9 cm", weight: "1.0 kg", bpm: "120-160", fruit: { n: "coco", e: "🥥" }, anim: { n: "perezoso", e: "🦥" }, fact: "'06/03/2026: ¡Ya sueña! Su actividad cerebral es muy intensa mientras duerme' (O da actividad cerebral é cousa de mamá sin duda!)." },
+            29: { len: "39.2 cm", weight: "1.15 kg", bpm: "120-160", fruit: { n: "calabaza", e: "🎃" }, anim: { n: "pato", e: "🦆" }, fact: "'13/03/2026: Sus huesos se están endureciendo, aunque el cráneo seguirá siendo flexible.' Aproveita para endurecer ben os dentes, por favor non te parezas a teu pai..." },
+            30: { len: "40.5 cm", weight: "1.3 kg", bpm: "120-160", fruit: { n: "col", e: "🥬" }, anim: { n: "nutria mini", e: "🦦" }, fact: "'20/03/2026: Empieza a imitar movimientos respiratorios para practicar fuera del útero.' Básicamente está ensayando para os berrinches." },
+            31: { len: "41.8 cm", weight: "1.5 kg", bpm: "120-160", fruit: { n: "calabacín", e: "🥒" }, anim: { n: "mono", e: "🐒" }, fact: "'27/03/2026: Sus sentidos están alerta: ya diferencia entre luz tenue y oscuridad.' Malas noticias! Sabrá perfectamente cando son as 3 da mañán para pedir fiesta." },
+            32: { len: "43.0 cm", weight: "1.7 kg", bpm: "120-160", fruit: { n: "apio", e: "🌿" }, anim: { n: "mapache mini", e: "🦝" }, fact: "'03/04/2026: Ya tiene uñas en los dedos de las manos y de los pies.' Outro mantenimiento semanal que sumar á lista de tareas de mamá..." },
+            33: { len: "44.0 cm", weight: "1.9 kg", bpm: "120-160", fruit: { n: "piña", e: "🍍" }, anim: { n: "zorrito", e: "🦊" }, fact: "'10/04/2026: Su sistema inmunológico empieza a recibir los anticuerpos de mamá. Es su primer escudo contra los virus.' E contra os mofletes das tías e avoas 😒" },
+            34: { len: "45.2 cm", weight: "2.1 kg", bpm: "120-160", fruit: { n: "melón", e: "🍈" }, anim: { n: "canguro mini", e: "🦘" }, fact: "'17/04/2026: Sus pulmones están casi listos para respirar.' E para o *Do* de peito non seus primeiros concertos nocturnos!" },
+            35: { len: "46.3 cm", weight: "2.4 kg", bpm: "120-160", fruit: { n: "melón verde", e: "🍈" }, anim: { n: "corderito", e: "🐑" }, fact: "'24/04/2026: El cerebro crece rápido; ya tiene casi todas las neuronas que tendrá al nacer.' Xa pode calcular os segundos exactos que vai tardar mamá en ceder e collelo no colo ao mínimo choro." },
+            36: { len: "47.3 cm", weight: "2.6 kg", bpm: "120-160", fruit: { n: "repollo", e: "🥬" }, anim: { n: "gato", e: "🐈" }, fact: "'01/05/2026: Está ganando una capa de grasa que le ayudará a mantener el calor fuera.' É a súa perdición para os: ai, que bochechiñas ten Luca!" },
+            37: { len: "48.3 cm", weight: "2.8 kg", bpm: "120-160", fruit: { n: "puerro", e: "🥗" }, anim: { n: "perrito", e: "🐶" }, fact: "'08/05/2026: ¡Ya se considera a término temprano! Sus órganos pueden funcionar solos.' Está na porta ca maleta feita, esperando o 'Uber' ao hospital." },
+            38: { len: "49.2 cm", weight: "3.1 kg", bpm: "120-160", fruit: { n: "papaya", e: "🥭" }, anim: { n: "cabrita", e: "🐐" }, fact: "'15/05/2026: El color de sus ojos es un misterio; se definirá meses después de nacer.' Sendo verano, a ver si mamá non che pon gafas e chos podemos ver" },
+            39: { len: "50.1 cm", weight: "3.25 kg", bpm: "110-150", fruit: { n: "calabacín", e: "🥒" }, anim: { n: "foca junior", e: "🦭" }, fact: "'22/05/2026: Sus intestinos están acumulando el meconio, su primera digestión. 🧔🏻‍♂️' Tranquilos todos! Estou preparado!" },
+            40: { len: "51.0 cm", weight: "3.5 kg", bpm: "110-150", fruit: { n: "calabaza", e: "🎃" }, anim: { n: "guepardo", e: "🐆" }, fact: "'29/05/2026: Luca tiene el tamaño perfecto para conocer el mundo.' Ou me sacades ou múdome de piso, neste dúplex xa non se colle!" },
+            41: { len: "51.0 cm", weight: "3.5 kg", bpm: "110-150", fruit: { n: "sandía", e: "🍉" }, anim: { n: "leoncito", e: "🦁" }, fact: "'05/06/2026: Está muy cómodo, pero el viaje tiene que terminar.' Parece mamá, como lle gusta o sofá e que lle leven o desayuno á cama..." }
         };
 
         const ctx = document.getElementById('progressChart').getContext('2d');
@@ -222,7 +242,22 @@
         const progressChart = new Chart(ctx, { type: 'doughnut', data: { datasets: [{ data: [0, 100], backgroundColor: [gradient, '#1f2937'], borderWidth: 0, cutout: '82%', borderRadius: 25 }] }, options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { tooltip: { enabled: false }, legend: { display: false } } } });
 
         function toggleModal(show) { document.getElementById('modal-info').style.display = show ? 'flex' : 'none'; }
-        function changeWeek(dir) { const now = new Date(); const totalDaysElapsed = Math.floor((now - startDate) / (1000 * 60 * 60 * 24)); const actualWeek = Math.floor(totalDaysElapsed / 7); const targetWeek = (actualWeek + manualWeekOffset) + dir; if (targetWeek >= 0 && targetWeek <= 41) { manualWeekOffset += dir; update(); } }
+        
+        function changeWeek(dir) { 
+            const now = new Date(); 
+            const totalDaysElapsed = Math.floor((now - startDate) / (1000 * 60 * 60 * 24)); 
+            const actualWeek = Math.floor(totalDaysElapsed / 7); 
+            const targetWeek = (actualWeek + manualWeekOffset) + dir; 
+            if (targetWeek >= 0 && targetWeek <= 41) { 
+                manualWeekOffset += dir; 
+                update(); 
+            } 
+        }
+
+        // Función para limpiar ceros
+        function formatVal(val) {
+            return (val === "0" || val === 0 || val === "0 g" || val === "0 mm") ? "—" : val;
+        }
 
         function update() {
             const now = new Date();
@@ -242,18 +277,33 @@
             let dataWeek = (displayWeek < 0) ? 0 : (displayWeek > 41 ? 41 : displayWeek);
             const currentData = weekData[dataWeek];
             const item = document.getElementById('category-select').value === 'fruits' ? currentData.fruit : currentData.anim;
+            
             const weekLabel = document.getElementById('current-week-label');
+            weekLabel.classList.remove('not-current', 'completed');
             
             let daysSuffix = (manualWeekOffset === 0 && extraDays > 0) ? ` +${extraDays}` : "";
-            weekLabel.innerText = (manualWeekOffset !== 0 ? "⚠️ " : "") + `Semana ${displayWeek}${daysSuffix}`;
-            if (manualWeekOffset !== 0) weekLabel.classList.add('not-current'); else weekLabel.classList.remove('not-current');
+            let prefix = "";
+
+            if (manualWeekOffset < 0) {
+                prefix = "✅ ";
+                weekLabel.classList.add('completed');
+            } else if (manualWeekOffset > 0) {
+                prefix = "⚠️ ";
+                weekLabel.classList.add('not-current');
+            } else {
+                prefix = "";
+            }
+            
+            weekLabel.innerText = `${prefix}Semana ${displayWeek}${daysSuffix}`;
             
             document.getElementById('compare-name').innerText = item.n;
             document.getElementById('compare-emoji').innerText = item.e;
-            document.getElementById('meas-len').innerText = currentData.len;
-            document.getElementById('meas-weight').innerText = currentData.weight;
+
+            // Aplicación de formato "-"
+            document.getElementById('meas-len').innerText = formatVal(currentData.len);
+            document.getElementById('meas-weight').innerText = formatVal(currentData.weight);
+            document.getElementById('meas-bpm').innerText = formatVal(currentData.bpm);
             
-            // Lógica de intriga: Bloquear frases de semanas futuras
             if (displayWeek > actualWeek) {
                 document.getElementById('weekly-fact').innerHTML = `🔒 Ya te gustaría ver la frase de esta semana, pero para eso vas a tener que esperar hasta la <b>semana ${displayWeek}</b>.`;
             } else {
