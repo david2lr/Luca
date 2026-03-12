@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Luca Dashboard</title>
+    <title>Luca Dashboard Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -18,18 +17,21 @@
             --track: #1f2937;
             --glass: rgba(255, 255, 255, 0.05);
         }
+        
+        /* Ajuste: Permite scroll y quita la limitación de pantalla completa */
         body {
-            margin: 0; padding: 0; background: var(--bg); color: #f8fafc;
+            margin: 0; padding: 20px 0; background: var(--bg); color: #f8fafc;
             font-family: 'Inter', -apple-system, sans-serif;
             display: flex; align-items: center; justify-content: center;
-            height: 100dvh; overflow: hidden;
+            min-height: 100dvh; box-sizing: border-box;
         }
+        
         .container {
             width: 92%; max-width: 380px; text-align: center;
             background: var(--card); padding: 1.2rem; border-radius: 40px;
             backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: 0 0 50px rgba(0, 0, 0, 0.9); display: flex; flex-direction: column;
-            position: relative;
+            position: relative; margin: auto;
         }
         .header-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem; }
         .nav-btn {
@@ -66,13 +68,7 @@
         .week-badge.not-current { background: rgba(245, 158, 11, 0.15); color: var(--warning); border-color: rgba(245, 158, 11, 0.4); }
         .week-badge.completed { background: rgba(34, 197, 94, 0.15); color: var(--success); border-color: rgba(34, 197, 94, 0.4); }
 
-        /* Nuevos estilos para 3 columnas de medidas */
-        .measurements { 
-            display: grid; 
-            grid-template-columns: 1fr auto 1fr auto 1fr; 
-            align-items: center; 
-            margin-bottom: 0.8rem; 
-        }
+        .measurements { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: center; margin-bottom: 0.8rem; }
         .meas-item { display: flex; flex-direction: column; align-items: center; }
         .meas-val { font-size: 0.85rem; font-weight: 600; color: white; display: block; }
         .meas-lab { font-size: 0.55rem; color: #64748b; text-transform: uppercase; margin-top: 2px; }
@@ -90,6 +86,32 @@
             display: flex; align-items: center; justify-content: center;
         }
         #weekly-fact { font-size: 0.75rem; line-height: 1.4; color: #cbd5e1; margin: 0; font-style: italic; }
+
+        /* NUEVOS ESTILOS: Contadores y botones */
+        .action-row { display: flex; gap: 8px; margin-bottom: 0.8rem; }
+        .action-btn { flex: 1; background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.4); color: white; border-radius: 18px; padding: 12px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .action-btn:active { transform: scale(0.97); }
+        .action-btn.danger-btn { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); }
+        .action-btn.danger-active { background: rgba(245, 158, 11, 0.2); border-color: rgba(245, 158, 11, 0.6); color: #f59e0b; }
+        .hist-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; width: 48px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; transition: 0.2s; }
+        .hist-btn:active { background: rgba(255,255,255,0.1); transform: scale(0.9); }
+        .contr-stats { display: flex; justify-content: space-between; font-size: 0.65rem; color: #94a3b8; margin: -4px 8px 12px 8px; text-transform: uppercase; padding-top: 5px; }
+        .contr-stats span { font-weight: 600; color: white; font-size: 0.8rem; margin-left: 4px; text-transform: lowercase;}
+        
+        /* Listas e Historiales Modales */
+        .hist-list { max-height: 250px; overflow-y: auto; margin-bottom: 1rem; padding-right: 5px; }
+        .hist-list::-webkit-scrollbar { width: 4px; }
+        .hist-list::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
+        .hist-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+        .hist-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); padding: 10px 15px; border-radius: 12px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.05); text-align: left; }
+        .hist-item-info { display: flex; flex-direction: column; gap: 4px; }
+        .hist-item-title { color: white; font-weight: 600; font-size: 0.85rem; }
+        .hist-item-date { font-size: 0.65rem; color: #94a3b8; }
+        .del-btn { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-size: 0.9rem; }
+        .del-btn:active { background: rgba(239, 68, 68, 0.2); transform: scale(0.9); }
+        .del-all-btn { width: 100%; background: rgba(239, 68, 68, 0.1); border: 1px dashed rgba(239, 68, 68, 0.4); color: #ef4444; padding: 10px; border-radius: 12px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .del-all-btn:active { background: rgba(239, 68, 68, 0.2); }
+        .modal-header { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px; position: relative; }
 
         .progress-track { width: 100%; height: 6px; background: var(--track); border-radius: 10px; overflow: hidden; }
         .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--accent)); }
@@ -111,7 +133,7 @@
             <button class="nav-btn" onclick="changeWeek(-1)">&#10094;</button>
             <div class="title-wrapper">
                 <h1>Luca</h1>
-                <button class="info-trigger" onclick="toggleModal(true)">i</button>
+                <button class="info-trigger" onclick="toggleModal('modal-info', true)">i</button>
             </div>
             <button class="nav-btn" onclick="changeWeek(1)">&#10095;</button>
         </div>
@@ -124,8 +146,8 @@
                 <span id="compare-name">...</span>
                 <span id="compare-emoji"></span>
                 <select id="category-select">
-                    <option value="fruits">🍎 Frutas</option>
                     <option value="animals">🦁 Animales</option>
+                    <option value="fruits">🍎 Frutas</option>
                 </select>
             </div>
         </div>
@@ -133,24 +155,31 @@
         <div id="current-week-label" class="week-badge">Semana --</div>
 
         <div class="measurements">
-            <div class="meas-item">
-                <span id="meas-len" class="meas-val">--</span>
-                <span class="meas-lab">Longitud</span>
-            </div>
+            <div class="meas-item"><span id="meas-len" class="meas-val">--</span><span class="meas-lab">Longitud</span></div>
             <div class="divider"></div>
-            <div class="meas-item">
-                <span id="meas-weight" class="meas-val">--</span>
-                <span class="meas-lab">Peso</span>
-            </div>
+            <div class="meas-item"><span id="meas-weight" class="meas-val">--</span><span class="meas-lab">Peso</span></div>
             <div class="divider"></div>
-            <div class="meas-item">
-                <span id="meas-bpm" class="meas-val">--</span>
-                <span class="meas-lab">Pulso (bpm)</span>
-            </div>
+            <div class="meas-item"><span id="meas-bpm" class="meas-val">--</span><span class="meas-lab">Pulso (bpm)</span></div>
         </div>
 
         <div class="fact-container">
             <p id="weekly-fact">Cargando hito de la semana...</p>
+        </div>
+
+        <div class="action-row">
+            <button id="btn-kick" class="action-btn" onclick="registerKick()">👣 Patada <span id="kick-count">0</span>/10</button>
+            <button class="hist-btn" onclick="openHistModal('modal-kicks-hist')">📋</button>
+        </div>
+
+        <div id="contraction-container">
+            <div class="action-row" style="margin-bottom: 6px;">
+                <button id="btn-contr" class="action-btn danger-btn" onclick="toggleContraction()">🔴 Iniciar contracción</button>
+                <button class="hist-btn" onclick="openHistModal('modal-contr-hist')">📋</button>
+            </div>
+            <div class="contr-stats">
+                <div>DURACIÓN: <span id="contr-dur">0.0 s</span></div>
+                <div>FRECUENCIA: <span id="contr-freq">--</span></div>
+            </div>
         </div>
 
         <div class="stats-grid">
@@ -166,15 +195,17 @@
             </div>
         </div>
 
+        
+
         <div class="progress-wrapper">
             <div class="progress-track"><div id="progress-fill" class="progress-fill"></div></div>
             <div class="dates-row"><span>22/08/2025</span><span>29/05/2026</span></div>
         </div>
     </div>
 
-    <div class="modal-overlay" id="modal-info" onclick="toggleModal(false)">
+    <div class="modal-overlay" id="modal-info" onclick="toggleModal('modal-info', false)">
         <div class="modal-card" onclick="event.stopPropagation()">
-            <span class="modal-close" onclick="toggleModal(false)">&times;</span>
+            <span class="modal-close" onclick="toggleModal('modal-info', false)">&times;</span>
             <div class="info-sec"><h3>Nombre Luca</h3><p>Origen griego (<strong>Loukas</strong>). Significa "el que trae la luz" o "el que brilla".</p></div>
             <div class="info-sec"><h3>Año Chino 2026</h3><p><strong>Caballo de Fuego</strong>. Ocurre cada 60 años; energía desbordante, entusiasta e independiente.</p></div>
             <div class="info-sec"><h3>Zodíaco</h3><p>♊ <strong>Géminis</strong></p></div>
@@ -186,13 +217,44 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="modal-kicks-hist" onclick="toggleModal('modal-kicks-hist', false)">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <span class="modal-close" onclick="toggleModal('modal-kicks-hist', false)">&times;</span>
+            <div class="modal-header">
+                <h3 style="margin:0; font-size:1.1rem; color:var(--primary)">Registro de pataditas</h3>
+                <button class="info-trigger" style="margin-top:0" onclick="const e=document.getElementById('kicks-info'); e.style.display=e.style.display==='block'?'none':'block'">i</button>
+            </div>
+            <p id="kicks-info" style="display:none; font-size:0.75rem; color:#94a3b8; margin-top:-5px; margin-bottom:15px; text-align:left; line-height:1.4">
+                El estándar médico sugiere medir cuánto tarda el bebé en dar 10 movimientos. El objetivo ideal es alcanzar los 10 movimientos en menos de 2 horas.
+            </p>
+            <div class="hist-list" id="kicks-list"></div>
+            <button class="del-all-btn" onclick="clearAll('kicks')">Borrar todo el registro</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-contr-hist" onclick="toggleModal('modal-contr-hist', false)">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <span class="modal-close" onclick="toggleModal('modal-contr-hist', false)">&times;</span>
+            <div class="modal-header">
+                <h3 style="margin:0; font-size:1.1rem; color:#ef4444">Registro de contracciones</h3>
+                <button class="info-trigger" style="margin-top:0" onclick="const e=document.getElementById('contr-info'); e.style.display=e.style.display==='block'?'none':'block'">i</button>
+            </div>
+            <p id="contr-info" style="display:none; font-size:0.75rem; color:#94a3b8; margin-top:-5px; margin-bottom:15px; text-align:left; line-height:1.4">
+                <b>Regla 5-1-1:</b> Contracciones cada 5 minutos, de 1 minuto de duración, durante 1 hora ininterrumpida. ¡Si esto ocurre, es hora de ir al hospital!
+            </p>
+            <div class="hist-list" id="contr-list"></div>
+            <button class="del-all-btn" onclick="clearAll('contr')">Borrar todo el registro</button>
+        </div>
+    </div>
+
     <script>
         const startDate = new Date('2025-08-22T00:00:00');
         const endDate = new Date('2026-05-29T00:00:00');
         const totalDuration = endDate - startDate;
+        const MIN_WEEK_FOR_CONTRACTIONS = 35;
         let manualWeekOffset = 0;
 
-		const weekData = {
+        const weekData = {
             0: { len: "0", weight: "0", bpm: "0", fruit: { n: "un sueño", e: "✨" }, anim: { n: "un deseo", e: "💭" }, fact: "'22/08/2025: Todo empieza con una ilusión. Esta semana el cuerpo de mamá se prepara para la aventura más increíble.' Papá, ¡ánimo!" },
             1: { len: "0", weight: "0", bpm: "0", fruit: { n: "una idea", e: "💡" }, anim: { n: "una chispa", e: "⚡" }, fact: "'29/08/2025: Es el inicio del ciclo. Aunque aún no estás aquí, el universo ya está conspirando para tu llegada.' ¡Aínda que de momento non temos nin a máis remota idea do que vai pasar!" },
             2: { len: "0", weight: "0", bpm: "0", fruit: { n: "pizca de canela", e: "🟤" }, anim: { n: "polen", e: "🌸" }, fact: "'05/09/2025: ¡Momento mágico! El óvulo y el espermatozoide se encuentran. En este instante se decide toda la genética.' Onde está o catálogo para poder escoller? Porque como saias co carácter de mamá..." },
@@ -201,7 +263,7 @@
             5: { len: "2.0 mm", weight: "0", bpm: "100-115", fruit: { n: "semilla de sésamo", e: "⚪" }, anim: { n: "renacuajo", e: "🐸" }, fact: "'26/09/2025: ¡Pum-pum! Tu corazoncito empieza a latir por primera vez.' Acabamos de enterarnos de que nunca máis imos volver a ser solo dous!" },
             6: { len: "5.0 mm", weight: "0", bpm: "115-130", fruit: { n: "guisante", e: "🟢" }, anim: { n: "mariquita", e: "🐞" }, fact: "'03/10/2025: Ya se empiezan a intuir tus ojitos y tus extremidades. Eres pequeño como un guisante pero ocupas todo nuestro pensamiento.' Pero shhh, de momento é un secreto, queremos ir de viaxe a Eslovenia sin que nadie nos rompa a cabeza" },
             7: { len: "9.5 mm", weight: "0", bpm: "130-150", fruit: { n: "arándano", e: "🫐" }, anim: { n: "abeja", e: "🐝" }, fact: "'10/10/2025: Tu cerebro crece a una velocidad increíble. Estás creando miles de neuronas cada minuto para ser el más listo de la casa' (Despois de papá claro). O 11 de octubre dámoslle a gran noticia aos avós e ás tías! Se os veees...." },
-            8: { len: "1.6 cm", weight: "0", bpm: "150-170", fruit: { n: "frambuesa", e: "🍇" }, anim: { n: "caracolito", e: "🐌" }, fact: "'17/10/2025: Tus manos y pies ya tienen dedos, aunque todavía parecen pequeñas aletas. Estás preparándote para empezar a nadar.' Os teus queridos avós teñen piscina, así que... aprende ben a nadar! Ademáis, esta semana imos verte por primeira vez nunha eco e escoitaremos o teu latido. Era a confirmación absoluta, casi non nolo creemos!" },
+            8: { len: "1.6 cm", weight: "0", bpm: "150-170", fruit: { n: "frambuesa", e: "🍇" }, anim: { n: "caracolito", e: "🐌" }, fact: "'17/10/2025: Tus manos y pies ya tienen dedos, aunque todavía parecen pequeñas aletas. Estás preparándote para empezar a nadar.' Os teus queridos avós teñen piscina, así que... aprende ben a nadar! Ademáis, esta semana imos verte por primera vez nunha eco e escoitaremos o teu latido. Era a confirmación absoluta, casi non nolo creemos!" },
             9: { len: "2.3 cm", weight: "0", bpm: "155-175", fruit: { n: "cereza", e: "🍒" }, anim: { n: "abejorro", e: "🐝" }, fact: "'24/10/2025: Ya no eres un embrión, ¡ahora eres oficialmente un feto! Tus articulaciones empiezan a funcionar y no paras de moverte.' Papá tampouco para quieto, así que non te preocupes." },
             10: { len: "3.1 cm", weight: "35 g", bpm: "160-180", fruit: { n: "fresa", e: "🍓" }, anim: { n: "mariposa", e: "🦋" }, fact: "'31/10/2025: Tus órganos vitales ya están en su sitio y funcionando. Eres una pequeña obra maestra en miniatura.' Mamá está traballando 24/7 para eso." },
             11: { len: "4.1 cm", weight: "45 g", bpm: "150-170", fruit: { n: "higo", e: "🥯" }, anim: { n: "rana", e: "🐸" }, fact: "'07/11/2025: Te pasas el día estirándote y dando saltitos. Estás tan cómodo en tu piscina particular que no dejas de practicar gimnasia.' Normal, co pedazo dúplex que che ten instalado túa nai..." },
@@ -242,7 +304,8 @@
         gradient.addColorStop(0, '#6366f1'); gradient.addColorStop(1, '#a855f7');
         const progressChart = new Chart(ctx, { type: 'doughnut', data: { datasets: [{ data: [0, 100], backgroundColor: [gradient, '#1f2937'], borderWidth: 0, cutout: '82%', borderRadius: 25 }] }, options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { tooltip: { enabled: false }, legend: { display: false } } } });
 
-        function toggleModal(show) { document.getElementById('modal-info').style.display = show ? 'flex' : 'none'; }
+        function toggleModal(id, show) { document.getElementById(id).style.display = show ? 'flex' : 'none'; }
+        function openHistModal(id) { toggleModal(id, true); updateLists(); }
         
         function changeWeek(dir) { 
             const now = new Date(); 
@@ -255,10 +318,7 @@
             } 
         }
 
-        // Función para limpiar ceros
-        function formatVal(val) {
-            return (val === "0" || val === 0 || val === "0 g" || val === "0 mm") ? "—" : val;
-        }
+        function formatVal(val) { return (val === "0" || val === 0 || val === "0 g" || val === "0 mm") ? "—" : val; }
 
         function update() {
             const now = new Date();
@@ -281,26 +341,16 @@
             
             const weekLabel = document.getElementById('current-week-label');
             weekLabel.classList.remove('not-current', 'completed');
-            
             let daysSuffix = (manualWeekOffset === 0 && extraDays > 0) ? ` +${extraDays}` : "";
             let prefix = "";
 
-            if (manualWeekOffset < 0) {
-                prefix = "✅ ";
-                weekLabel.classList.add('completed');
-            } else if (manualWeekOffset > 0) {
-                prefix = "⚠️ ";
-                weekLabel.classList.add('not-current');
-            } else {
-                prefix = "";
-            }
+            if (manualWeekOffset < 0) { prefix = "✅ "; weekLabel.classList.add('completed'); } 
+            else if (manualWeekOffset > 0) { prefix = "⚠️ "; weekLabel.classList.add('not-current'); } 
             
             weekLabel.innerText = `${prefix}Semana ${displayWeek}${daysSuffix}`;
-            
             document.getElementById('compare-name').innerText = item.n;
             document.getElementById('compare-emoji').innerText = item.e;
 
-            // Aplicación de formato "-"
             document.getElementById('meas-len').innerText = formatVal(currentData.len);
             document.getElementById('meas-weight').innerText = formatVal(currentData.weight);
             document.getElementById('meas-bpm').innerText = formatVal(currentData.bpm);
@@ -315,6 +365,153 @@
             const p = formatTime(elapsed); const l = formatTime(remaining);
             document.getElementById('passed-days').innerText = p.days; document.getElementById('passed-hms').innerText = p.hms;
             document.getElementById('left-days').innerText = l.days; document.getElementById('left-hms').innerText = l.hms;
+            checkContractionDisplay(displayWeek);
+        }
+        function checkContractionDisplay(displayWeek) {
+            const container = document.getElementById('contraction-container');
+            
+            // Si la semana es menor a 35, ocultamos el contenedor
+            if (displayWeek < MIN_WEEK_FOR_CONTRACTIONS) {
+                container.style.display = 'none';
+            } else {
+                container.style.display = 'block'; // O 'flex', según tu diseño
+            }
+        }
+        // ==========================================
+        // NUEVA LÓGICA: PATADITAS Y CONTRACCIONES
+        // ==========================================
+        let kicksData = JSON.parse(localStorage.getItem('luca_kicks')) || [];
+        let contrData = JSON.parse(localStorage.getItem('luca_contrs')) || [];
+        
+        // Formateador de tiempo (m y s con un decimal)
+        function formatTimeElapse(ms) {
+            if (ms === undefined || ms === null || isNaN(ms)) return "--";
+            const totalSec = ms / 1000;
+            if (totalSec < 60) return totalSec.toFixed(1) + " s";
+            const m = Math.floor(totalSec / 60);
+            const s = (totalSec % 60).toFixed(1);
+            return `${m} m ${s} s`;
+        }
+
+        // --- PATADAS ---
+        let kickCount = 0;
+        let kickStart = null;
+
+        function registerKick() {
+            if(kickCount === 0) kickStart = Date.now();
+            kickCount++;
+            document.getElementById('kick-count').innerText = kickCount;
+            
+            if(kickCount === 10) {
+                const duration = Date.now() - kickStart;
+                kicksData.unshift({ id: Date.now(), date: new Date().toLocaleString(), duration: duration });
+                localStorage.setItem('luca_kicks', JSON.stringify(kicksData));
+                
+                setTimeout(() => {
+                    alert(`¡Sesión completada! Has registrado 10 pataditas en ${formatTimeElapse(duration)}.`);
+                    kickCount = 0;
+                    kickStart = null;
+                    document.getElementById('kick-count').innerText = kickCount;
+                }, 100);
+            }
+        }
+
+        // --- CONTRACCIONES ---
+        let contrActive = false;
+        let contrStart = null;
+        let lastContrStart = null;
+        let contrTimer = null;
+
+        function toggleContraction() {
+            const btn = document.getElementById('btn-contr');
+            const now = Date.now();
+            
+            if(!contrActive) {
+                // Iniciar
+                contrActive = true;
+                btn.innerHTML = '🛑 Detener contracción';
+                btn.classList.add('danger-active');
+                
+                let freqStr = '--';
+                if(lastContrStart) {
+                    const freq = now - lastContrStart;
+                    freqStr = formatTimeElapse(freq);
+                    document.getElementById('contr-freq').innerText = freqStr;
+                }
+                
+                contrStart = now;
+                btn.dataset.currentFreq = freqStr; 
+                
+                contrTimer = setInterval(() => {
+                    document.getElementById('contr-dur').innerText = formatTimeElapse(Date.now() - contrStart);
+                }, 100);
+                
+            } else {
+                // Detener
+                contrActive = false;
+                btn.innerHTML = '🔴 Iniciar contracción';
+                btn.classList.remove('danger-active');
+                clearInterval(contrTimer);
+                
+                const duration = now - contrStart;
+                const freqStr = btn.dataset.currentFreq || '--';
+                
+                contrData.unshift({ id: now, date: new Date().toLocaleString(), duration: duration, freq: freqStr });
+                localStorage.setItem('luca_contrs', JSON.stringify(contrData));
+                
+                lastContrStart = contrStart;
+            }
+        }
+
+        // --- GESTIÓN DE LISTAS ---
+        function updateLists() {
+            const kList = document.getElementById('kicks-list');
+            kList.innerHTML = kicksData.length ? '' : '<p style="text-align:center; color:#64748b; font-size:0.8rem">No hay registros aún.</p>';
+            kicksData.forEach(k => {
+                kList.innerHTML += `<div class="hist-item">
+                    <div class="hist-item-info">
+                        <span class="hist-item-title">10 patadas en ${formatTimeElapse(k.duration)}</span>
+                        <span class="hist-item-date">${k.date}</span>
+                    </div>
+                    <button class="del-btn" onclick="deleteItem('kicks', ${k.id})">🗑️</button>
+                </div>`;
+            });
+
+            const cList = document.getElementById('contr-list');
+            cList.innerHTML = contrData.length ? '' : '<p style="text-align:center; color:#64748b; font-size:0.8rem">No hay registros aún.</p>';
+            contrData.forEach(c => {
+                cList.innerHTML += `<div class="hist-item">
+                    <div class="hist-item-info">
+                        <span class="hist-item-title">Dur: ${formatTimeElapse(c.duration)} | Frec: ${c.freq}</span>
+                        <span class="hist-item-date">${c.date}</span>
+                    </div>
+                    <button class="del-btn" onclick="deleteItem('contr', ${c.id})">🗑️</button>
+                </div>`;
+            });
+        }
+
+        function deleteItem(type, id) {
+            if(type === 'kicks') {
+                kicksData = kicksData.filter(k => k.id !== id);
+                localStorage.setItem('luca_kicks', JSON.stringify(kicksData));
+            } else {
+                contrData = contrData.filter(c => c.id !== id);
+                localStorage.setItem('luca_contrs', JSON.stringify(contrData));
+            }
+            updateLists();
+        }
+
+        function clearAll(type) {
+            if(confirm("¿Estás seguro de que deseas borrar todo el registro? Esta acción no se puede deshacer.")) {
+                if(type === 'kicks') {
+                    kicksData = [];
+                    localStorage.removeItem('luca_kicks');
+                } else {
+                    contrData = [];
+                    localStorage.removeItem('luca_contrs');
+                }
+                updateLists();
+            }
         }
 
         document.getElementById('category-select').addEventListener('change', update);
