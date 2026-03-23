@@ -80,14 +80,27 @@
         .stat-days { font-size: 1rem; font-weight: 600; color: white; }
         .stat-hms { font-size: 0.7rem; color: #94a3b8; }
 
+        /* ESTILOS DEL CONTENEDOR DE LA FRASE (DIARIA) */
         .fact-container {
-            background: rgba(99, 102, 241, 0.05); padding: 12px; border-radius: 20px;
+            position: relative; overflow: hidden;
+            background: rgba(99, 102, 241, 0.05); padding: 12px 35px; border-radius: 20px;
             margin-bottom: 1rem; border: 1px dashed rgba(99, 102, 241, 0.2); min-height: 60px;
             display: flex; align-items: center; justify-content: center;
         }
-        #weekly-fact { font-size: 0.75rem; line-height: 1.4; color: #cbd5e1; margin: 0; font-style: italic; }
+        #weekly-fact-text { font-size: 0.75rem; line-height: 1.4; color: #cbd5e1; margin: 0; font-style: italic; text-align: center; }
+        
+        .day-btn {
+            position: absolute; top: 0; bottom: 0; width: 28px;
+            background: rgba(255, 255, 255, 0.02); border: none;
+            color: rgba(255, 255, 255, 0.3); font-size: 1.2rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .day-btn:hover { background: rgba(255, 255, 255, 0.1); color: white; }
+        .day-btn:active { background: rgba(99, 102, 241, 0.3); }
+        .day-btn-left { left: 0; border-right: 1px dashed rgba(99, 102, 241, 0.2); border-radius: 20px 0 0 20px; }
+        .day-btn-right { right: 0; border-left: 1px dashed rgba(99, 102, 241, 0.2); border-radius: 0 20px 20px 0; }
 
-        /* NUEVOS ESTILOS: Contadores y botones */
         .action-row { display: flex; gap: 8px; margin-bottom: 0.8rem; }
         .action-btn { flex: 1; background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.4); color: white; border-radius: 18px; padding: 12px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .action-btn:active { transform: scale(0.97); }
@@ -98,7 +111,6 @@
         .contr-stats { display: flex; justify-content: space-between; font-size: 0.65rem; color: #94a3b8; margin: -4px 8px 12px 8px; text-transform: uppercase; padding-top: 5px; }
         .contr-stats span { font-weight: 600; color: white; font-size: 0.8rem; margin-left: 4px; text-transform: lowercase;}
         
-        /* Listas e Historiales Modales */
         .hist-list { max-height: 250px; overflow-y: auto; margin-bottom: 1rem; padding-right: 5px; }
         .hist-list::-webkit-scrollbar { width: 4px; }
         .hist-list::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
@@ -163,7 +175,9 @@
         </div>
 
         <div class="fact-container">
-            <p id="weekly-fact">Cargando hito de la semana...</p>
+            <button class="day-btn day-btn-left" onclick="changeDay(-1)">&#10094;</button>
+            <p id="weekly-fact-text">Cargando hito del día...</p>
+            <button class="day-btn day-btn-right" onclick="changeDay(1)">&#10095;</button>
         </div>
 
         <div class="action-row">
@@ -194,8 +208,6 @@
                 <div id="left-hms" class="stat-hms">--:--:--</div>
             </div>
         </div>
-
-        
 
         <div class="progress-wrapper">
             <div class="progress-track"><div id="progress-fill" class="progress-fill"></div></div>
@@ -252,52 +264,592 @@
         const endDate = new Date('2026-05-29T00:00:00');
         const totalDuration = endDate - startDate;
         const MIN_WEEK_FOR_CONTRACTIONS = 35;
+        
         let manualWeekOffset = 0;
+        let manualDayIndex = -1; // -1 significa que el sistema calculará automáticamente el día
 
+        // Esqueleto de datos preparado para frases diarias (7 por semana)
         const weekData = {
-            0: { len: "0", weight: "0", bpm: "0", fruit: { n: "un sueño", e: "✨" }, anim: { n: "un deseo", e: "💭" }, fact: "'22/08/2025: Todo empieza con una ilusión. Esta semana el cuerpo de mamá se prepara para la aventura más increíble.' Papá, ¡ánimo!" },
-            1: { len: "0", weight: "0", bpm: "0", fruit: { n: "una idea", e: "💡" }, anim: { n: "una chispa", e: "⚡" }, fact: "'29/08/2025: Es el inicio del ciclo. Aunque aún no estás aquí, el universo ya está conspirando para tu llegada.' ¡Aínda que de momento non temos nin a máis remota idea do que vai pasar!" },
-            2: { len: "0", weight: "0", bpm: "0", fruit: { n: "pizca de canela", e: "🟤" }, anim: { n: "polen", e: "🌸" }, fact: "'05/09/2025: ¡Momento mágico! El óvulo y el espermatozoide se encuentran. En este instante se decide toda la genética.' Onde está o catálogo para poder escoller? Porque como saias co carácter de mamá..." },
-            3: { len: "1.5 mm", weight: "0", bpm: "0", fruit: { n: "semilla de fresa", e: "🍓" }, anim: { n: "tardígrado", e: "👾" }, fact: "'12/09/2025: ¡Ya te has instalado! Te has implantado en el útero, tu primer hogar' (E o máis grande que vas ter hasta que en algún momento nos mudemos do piso)" },
-            4: { len: "1.5 mm", weight: "0", bpm: "0", fruit: { n: "semilla de chía", e: "🌱" }, anim: { n: "caballito de mar", e: "🧬" }, fact: "'19/09/2025: Eres apenas un granito de energía, pero ya estás formando las capas que se convertirán en todos tus órganos.' A traballar un pouco, non van facer teus pais todo!" },
-            5: { len: "2.0 mm", weight: "0", bpm: "100-115", fruit: { n: "semilla de sésamo", e: "⚪" }, anim: { n: "renacuajo", e: "🐸" }, fact: "'26/09/2025: ¡Pum-pum! Tu corazoncito empieza a latir por primera vez.' Acabamos de enterarnos de que nunca máis imos volver a ser solo dous!" },
-            6: { len: "5.0 mm", weight: "0", bpm: "115-130", fruit: { n: "guisante", e: "🟢" }, anim: { n: "mariquita", e: "🐞" }, fact: "'03/10/2025: Ya se empiezan a intuir tus ojitos y tus extremidades. Eres pequeño como un guisante pero ocupas todo nuestro pensamiento.' Pero shhh, de momento é un secreto, queremos ir de viaxe a Eslovenia sin que nadie nos rompa a cabeza" },
-            7: { len: "9.5 mm", weight: "0", bpm: "130-150", fruit: { n: "arándano", e: "🫐" }, anim: { n: "abeja", e: "🐝" }, fact: "'10/10/2025: Tu cerebro crece a una velocidad increíble. Estás creando miles de neuronas cada minuto para ser el más listo de la casa' (Despois de papá claro). O 11 de octubre dámoslle a gran noticia aos avós e ás tías! Se os veees...." },
-            8: { len: "1.6 cm", weight: "0", bpm: "150-170", fruit: { n: "frambuesa", e: "🍇" }, anim: { n: "caracolito", e: "🐌" }, fact: "'17/10/2025: Tus manos y pies ya tienen dedos, aunque todavía parecen pequeñas aletas. Estás preparándote para empezar a nadar.' Os teus queridos avós teñen piscina, así que... aprende ben a nadar! Ademáis, esta semana imos verte por primera vez nunha eco e escoitaremos o teu latido. Era a confirmación absoluta, casi non nolo creemos!" },
-            9: { len: "2.3 cm", weight: "0", bpm: "155-175", fruit: { n: "cereza", e: "🍒" }, anim: { n: "abejorro", e: "🐝" }, fact: "'24/10/2025: Ya no eres un embrión, ¡ahora eres oficialmente un feto! Tus articulaciones empiezan a funcionar y no paras de moverte.' Papá tampouco para quieto, así que non te preocupes." },
-            10: { len: "3.1 cm", weight: "35 g", bpm: "160-180", fruit: { n: "fresa", e: "🍓" }, anim: { n: "mariposa", e: "🦋" }, fact: "'31/10/2025: Tus órganos vitales ya están en su sitio y funcionando. Eres una pequeña obra maestra en miniatura.' Mamá está traballando 24/7 para eso." },
-            11: { len: "4.1 cm", weight: "45 g", bpm: "150-170", fruit: { n: "higo", e: "🥯" }, anim: { n: "rana", e: "🐸" }, fact: "'07/11/2025: Te pasas el día estirándote y dando saltitos. Estás tan cómodo en tu piscina particular que no dejas de practicar gimnasia.' Normal, co pedazo dúplex que che ten instalado túa nai..." },
-            12: { len: "5.4 cm", weight: "58 g", bpm: "120-160", fruit: { n: "ciruela", e: "🟣" }, anim: { n: "colibrí", e: "🐦" }, fact: "'14/11/2025: Tus riñones ya funcionan y tus reflejos están apareciendo. Si algo te toca la palma de la mano, ¡ya intentas cerrarla!' Carallo, por toma todos entenden, hasta con 12 semanas" },
-            13: { len: "6.7 cm", weight: "73 g", bpm: "120-160", fruit: { n: "limón", e: "🍋" }, anim: { n: "pollito", e: "🐥" }, fact: "'21/11/2025: ¡Fin del primer trimestre! Ya tienes huellas en las yemas de tus dedos; eres un ser único e irrepetible.' Eso espero, que están todos preocupados porque teñas os TOCs que inventan por ahí que ten teu pai..." },
-            14: { len: "14.7 cm", weight: "93 g", bpm: "120-160", fruit: { n: "melocotón", e: "🍑" }, anim: { n: "hámster", e: "🐹" }, fact: "'28/11/2025: Tus rasgos faciales se están recolocando. Ya puedes hacer gestos y hasta chuparte el dedo cuando tienes sueño.' Practica ben a comer o dedo cando teñas fame, que vas listo como lle pidas comida a papá" },
-            15: { len: "16.7 cm", weight: "117 g", bpm: "120-160", fruit: { n: "manzana", e: "🍎" }, anim: { n: "erizo", e: "🦔" }, fact: "'05/12/2025: Tu piel es todavía muy fina, pero ya te está creciendo un pelito muy suave llamado lanugo para mantenerte caliente.' En este paso, si te pareces a mamá irache mellor" },
-            16: { len: "18.6 cm", weight: "146 g", bpm: "120-160", fruit: { n: "aguacate", e: "🥑" }, anim: { n: "ardilla", e: "🐿️" }, fact: "'12/12/2025: ¡Primeras pataditas! Mamá pronto empezará a sentir tus movimientos. Es tu forma de decirnos: hola, estoy aquí.' E de que cada vez que mamá di que te estás movendo e poñemos a man paras, nin que estuveras xogando ao escondite..." },
-            17: { len: "20.4 cm", weight: "181 g", bpm: "120-160", fruit: { n: "granada", e: "🍎" }, anim: { n: "cobaya", e: "🐹" }, fact: "'19/12/2025: Tus oídos están casi formados. Ya puedes escuchar los latidos del corazón de mamá y su voz cuando te habla.' Susurrando: Lucaa. Fala papá. Compadézote. Ánimo, prometo sacarte de ahí" },
-            18: { len: "22.2 cm", weight: "223 g", bpm: "120-160", fruit: { n: "pimiento", e: "🫑" }, anim: { n: "ardilla roja", e: "🐿️" }, fact: "'26/12/2025: Estás muy activo y tus huesos se están volviendo más fuertes y necesitas dormir.' Non te pases durmindo ahora, que cando saias tamén hai que durmir eh!" },
-            19: { len: "24.0 cm", weight: "273 g", bpm: "120-160", fruit: { n: "mango", e: "🥭" }, anim: { n: "patito", e: "🦆" }, fact: "'02/01/2026: Se está formando la vérnix, una capa protectora en tu piel. Estás preparándote para ponerte guapo para tu gran estreno.' Terás fotos para parar un tren, a ver ahora si mamá ten espacio libre no móvil e se digna a subir as cousas á NAS algún día..." },
-            20: { len: "25.7 cm", weight: "331 g", bpm: "120-160", fruit: { n: "plátano", e: "🍌" }, anim: { n: "perrito pradera", e: "🐿️" }, fact: "'09/01/2026: ¡Mitad de camino superado! Ya hemos recorrido 20 semanas juntos.' Tic-tac, empeza a conta atrás!" },
-            21: { len: "27.4 cm", weight: "399 g", bpm: "120-160", fruit: { n: "patata", e: "🥔" }, anim: { n: "gatito", e: "🐱" }, fact: "'16/01/2026: Tus papilas gustativas están desarrolladas. ¡Ya empiezas a saborear lo que mamá come a través del líquido amniótico!' Cando mamá che dé potitos, dille que non estás acostumbrado, que preferías chocolate que estaba máis rico." },
-            22: { len: "29.0 cm", weight: "478 g", bpm: "120-160", fruit: { n: "mazorca", e: "🌽" }, anim: { n: "conejo", e: "🐰" }, fact: "'23/01/2026: Tus cejas y pestañas ya están en su sitio. Tu cara ya tiene el aspecto que veremos el día que nazcas.' Se eres guapo o mérito é de papá, senón, a culpa é de mamá que é a que está traballando as 24 horas" },
-            23: { len: "30.6 cm", weight: "568 g", bpm: "120-160", fruit: { n: "pomelo", e: "🍊" }, anim: { n: "hurón", e: "🦦" }, fact: "'30/01/2026: Tu piel se está volviendo menos transparente y empiezas a ganar un poquito de peso.' Mamá empeza a decir que lle moviche o centro de gravedad. Ahora serás un hurón, e mamá... un pingüino..." },
-            24: { len: "32.2 cm", weight: "670 g", bpm: "120-160", fruit: { n: "berenjena", e: "🍆" }, anim: { n: "zorrito", e: "🦊" }, fact: "'06/02/2026: ¡Ya nos oyes perfectamente!' Si papá che fala, faille caso. Si é mamá... non creo que seas capaz, non cala en todo o día!" },
-            25: { len: "33.7 cm", weight: "785 g", bpm: "120-160", fruit: { n: "uvas", e: "🍇" }, anim: { n: "chinchilla", e: "🐭" }, fact: "'13/02/2026: Tus pulmones están desarrollando los vasos sanguíneos para poder respirar aire pronto.' Cuidadito cos choros eh!" },
-            26: { len: "35.1 cm", weight: "913 g", bpm: "120-160", fruit: { n: "nabo", e: "🥕" }, anim: { n: "zorro desierto", e: "🦊" }, fact: "'20/02/2026: Tus ojos empiezan a entreabrirse. Muy pronto podrás ver la luz que entra desde fuera.' Con suerte, fará sol algún día, porque túa nai e a luz..." },
-            27: { len: "36.6 cm", weight: "1.06 kg", bpm: "120-160", fruit: { n: "coliflor", e: "🥦" }, anim: { n: "koala mini", e: "🐨" }, fact: "'27/02/2026: Sus ojos se abren por primera vez y ya puede parpadear. Está practicando la mirada de 'yo no he sido' cuando rompa algo.' Aínda que che vai costar superar a San David" },
-            28: { len: "37.9 cm", weight: "1.21 kg", bpm: "120-160", fruit: { n: "coco", e: "🥥" }, anim: { n: "perezoso", e: "🦥" }, fact: "'06/03/2026: ¡Ya sueña! Su actividad cerebral es muy intensa mientras duerme' (O da actividad cerebral é cousa de mamá sin duda!)." },
-            29: { len: "39.2 cm", weight: "1.37 kg", bpm: "120-160", fruit: { n: "calabaza", e: "🎃" }, anim: { n: "pato", e: "🦆" }, fact: "'13/03/2026: Sus huesos se están endureciendo, aunque el cráneo seguirá siendo flexible.' Aproveita para endurecer ben os dentes, por favor non te parezas a teu pai..." },
-            30: { len: "40.5 cm", weight: "1.55 kg", bpm: "120-160", fruit: { n: "col", e: "🥬" }, anim: { n: "nutria mini", e: "🦦" }, fact: "'20/03/2026: Empieza a imitar movimientos respiratorios para practicar fuera del útero.' Básicamente está ensayando para os berrinches." },
-            31: { len: "41.8 cm", weight: "1.75 kg", bpm: "120-160", fruit: { n: "calabacín", e: "🥒" }, anim: { n: "mono", e: "🐒" }, fact: "'27/03/2026: Sus sentidos están alerta: ya diferencia entre luz tenue y oscuridad.' Malas noticias! Sabrá perfectamente cando son as 3 da mañán para pedir festa." },
-            32: { len: "43.0 cm", weight: "1.95 kg", bpm: "120-160", fruit: { n: "apio", e: "🌿" }, anim: { n: "mapache mini", e: "🦝" }, fact: "'03/04/2026: Ya tiene uñas en los dedos de las manos y de los pies.' Outro mantenimiento semanal que sumar á lista de tareas de mamá..." },
-            33: { len: "44.0 cm", weight: "2.16 kg", bpm: "120-160", fruit: { n: "piña", e: "🍍" }, anim: { n: "zorrito", e: "🦊" }, fact: "'10/04/2026: Su sistema inmunológico empieza a recibir los anticuerpos de mamá. Es su primer escudo contra los virus.' E contra os mofletes das tías e avoas... 😒" },
-            34: { len: "45.2 cm", weight: "2.37 kg", bpm: "120-160", fruit: { n: "melón", e: "🍈" }, anim: { n: "canguro mini", e: "🦘" }, fact: "'17/04/2026: Sus pulmones están casi listos para respirar.' E para o *Do* de peito non seus primeiros concertos nocturnos!" },
-            35: { len: "46.3 cm", weight: "2.59 kg", bpm: "120-160", fruit: { n: "melón verde", e: "🍈" }, anim: { n: "corderito", e: "🐑" }, fact: "'24/04/2026: El cerebro crece rápido; ya tiene casi todas las neuronas que tendrá al nacer.' Xa pode calcular os segundos exactos que vai tardar mamá en ceder e collelo no colo ao mínimo choro..." },
-            36: { len: "47.3 cm", weight: "2.81 kg", bpm: "120-160", fruit: { n: "repollo", e: "🥬" }, anim: { n: "gato", e: "🐈" }, fact: "'01/05/2026: Está ganando una capa de grasa que le ayudará a mantener el calor fuera.' É a súa perdición para os: ai, que bochechiñas ten Luca!" },
-            37: { len: "48.3 cm", weight: "3.02 kg", bpm: "120-160", fruit: { n: "puerro", e: "🥗" }, anim: { n: "perrito", e: "🐶" }, fact: "'08/05/2026: ¡Ya se considera a término temprano! Sus órganos pueden funcionar solos.' Está na porta ca maleta feita, esperando o 'Uber' ao hospital" },
-            38: { len: "49.2 cm", weight: "3.23 kg", bpm: "120-160", fruit: { n: "papaya", e: "🥭" }, anim: { n: "cabrita", e: "🐐" }, fact: "'15/05/2026: El color de sus ojos es un misterio; se definirá meses después de nacer.' Sendo verano, a ver si mamá non che pon gafas e chos podemos ver" },
-            39: { len: "50.1 cm", weight: "3.43 kg", bpm: "110-150", fruit: { n: "calabacín", e: "🥒" }, anim: { n: "foca junior", e: "🦭" }, fact: "'22/05/2026: Sus intestinos están acumulando el meconio, su primera digestión. 🧔🏻‍♂️' Tranquilos todos! Papá está preparado!" },
-            40: { len: "51.0 cm", weight: "3.61 kg", bpm: "110-150", fruit: { n: "calabaza", e: "🎃" }, anim: { n: "guepardo", e: "🐆" }, fact: "'29/05/2026: Luca tiene el tamaño perfecto para conocer el mundo.' Ou me sacades ou múdome de piso, neste dúplex xa non se colle!" },
-            41: { len: "51.0 cm", weight: "3.61 kg", bpm: "110-150", fruit: { n: "sandía", e: "🍉" }, anim: { n: "leoncito", e: "🦁" }, fact: "'05/06/2026: Está muy cómodo, pero el viaje tiene que terminar.' Parece mamá, non quere que se lle acabe a vida de sofá e que lle leven o desayuno á cama..." }
-        };
+                0: { 
+                    len: "0", weight: "0", bpm: "0", 
+                    fruit: { n: "un sueño", e: "✨" }, 
+                    anim: { n: "un deseo", e: "💭" }, 
+                    facts: [
+                    "'22/08/2025: Todo empieza con una ilusión. Esta semana el cuerpo de mamá se prepara para la aventura.' Papá, ¡ánimo!",
+                    "'23/08/2025: El cuerpo es sabio y ya está orquestando el plan maestro.' Aquí empieza todo.",
+                    "'24/08/2025: Una pequeña célula con toda nuestra info.'",
+                    "'25/08/2025: Preparando el nido. Mamá aún no sabe que su vida va a cambiar 180°.'",
+                    "'26/08/2025: Silencio administrativo... pero en el laboratorio de mamá no se para de trabajar.'",
+                    "'27/08/2025: El universo está conspirando. ¡Paciencia, papá!'",
+                    "'28/08/2025: Último día de la 'semana cero'.'"
+                    ]
+                },
+                1: { 
+                    len: "0", weight: "0", bpm: "0", 
+                    fruit: { n: "una idea", e: "💡" }, 
+                    anim: { n: "una chispa", e: "⚡" }, 
+                    facts: [
+                    "'29/08/2025: Es el inicio del ciclo. El universo ya conspira para tu llegada.' ¡Aínda non temos ni idea!",
+                    "'30/08/2025: Selección natural en estado puro. ¡Que gane el mejor (y que sea tranquilo)!'",
+                    "'31/08/2025: Buscando el camino a casa. Primera misión crítica del pequeño astronauta.'",
+                    "'01/09/2025: Estás a punto de ser una realidad biológica. ¡Qué nervios!'",
+                    "'02/09/2025: Las leyes de la genética se preparan para el sorteo.' ¿Saldrás con los ojos de quién?",
+                    "'03/09/2025: Energía pura moviéndose hacia su destino final.'",
+                    "'04/09/2025: Mañana es el gran encuentro. ¡La cita más importante de nuestras vidas!'"
+                    ]
+                },
+                2: { 
+                    len: "0", weight: "0", bpm: "0", 
+                    fruit: { n: "pizca de canela", e: "🟤" }, 
+                    anim: { n: "polen", e: "🌸" }, 
+                    facts: [
+                    "'05/09/2025: ¡Momento mágico! Se decide toda la genética.' ¿Onde está o catálogo para escoller?",
+                    "'06/09/2025: Ya eres un zigoto. Un nombre raro para algo tan increíble.'",
+                    "'07/09/2025: Tus células se dividen a una velocidad que ni la fibra óptica de casa.'",
+                    "'08/09/2025: Eres un pequeño grupo de células con un potencial infinito.'",
+                    "'09/09/2025: Viajando por las trompas de Falopio... ¡sin Google Maps ni nada!' Algo que para papá é imposible",
+                    "'10/09/2025: Tu ADN ya dice si serás niño o niña. ¡Nosotros aún no sabemos nada!'",
+                    "'11/09/2025: Buscando el sitio perfecto para aparcar los próximos 9 meses.'"
+                    ]
+                },
+                3: { 
+                    len: "1.5 mm", weight: "0", bpm: "0", 
+                    fruit: { n: "semilla de fresa", e: "🍓" }, 
+                    anim: { n: "tardígrado", e: "👾" }, 
+                    facts: [
+                    "'12/09/2025: ¡Ya te has instalado! Tu primer hogar.' O máis grande que vas ter hasta que nos mudemos.",
+                    "'13/09/2025: Estás echando raíces. Literalmente. Mamá empieza a compartirlo todo contigo.'",
+                    "'14/09/2025: Eres un blastocisto aventurero. ¡Bienvenido a la zona de confort!'",
+                    "'15/09/2025: Empezando a fabricar la placenta. Tu propio sistema de catering 24/7.'",
+                    "'16/09/2025: Hormonas a tope. Mamá puede que empiece a sospechar algo... o no.'",
+                    "'17/09/2025: Eres invisible al ojo, pero ya eres el rey/reina de la casa.'",
+                    "'18/09/2025: Mañana cambiamos de semana y tú sigues creciendo sin descanso.'"
+                    ]
+                },
+                4: { 
+                    len: "1.5 mm", weight: "0", bpm: "0", 
+                    fruit: { n: "semilla de chía", e: "🌱" }, 
+                    anim: { n: "caballito de mar", e: "🧬" }, 
+                    facts: [
+                    "'19/09/2025: Eres un granito de energía formando tus órganos.' A traballar, non van facer todo teus pais!",
+                    "'20/09/2025: Se está formando el tubo neural. ¡Tu primer sistema eléctrico de alta gama!' Suerte tes si papá non cho configura na NAS",
+                    "'21/09/2025: Eres oficialmente un embrión. ¡Menudo ascenso de categoría!'",
+                    "'22/09/2025: Tres capas de células que serán pulmones, huesos y piel. ¡Ingeniería pura!'",
+                    "'23/09/2025: Mamá puede que note un cansancio raro. Es que tú gastas mucha batería.'",
+                    "'24/09/2025: Midiendo milímetros pero valiendo millones.'",
+                    "'25/09/2025: Mamá ya tiene el test positivo.' Non vexas a cara que se nos quedou"
+                    ]
+                },
+                5: { 
+                    len: "2.0 mm", weight: "0", bpm: "100-115", 
+                    fruit: { n: "semilla de sésamo", e: "⚪" }, 
+                    anim: { n: "renacuajo", e: "🐸" }, 
+                    facts: [
+                    "'26/09/2025: ¡Pum-pum! Tu corazón late por primera vez.' Nunca máis imos ser solo dous!",
+                    "'27/09/2025: Ese latido es el ritmo más bonito que hemos escuchado jamás.'",
+                    "'28/09/2025: Pareces un renacuajo, pero con un motor Ferrari ahí dentro.'",
+                    "'29/09/2025: Se empiezan a formar los hemisferios de tu cerebro. ¡A pensar!'",
+                    "'30/09/2025: El sistema circulatorio está en marcha. ¡Vaya obra de fontanería!'",
+                    "'01/10/2025: Mamá aún está asimilando lo que pasa'",
+                    "'02/10/2025: Mañana ya serás un guisante. ¡Cuidado no te nos pierdas!'"
+                    ]
+                },
+                6: { 
+                    len: "5.0 mm", weight: "0", bpm: "115-130", 
+                    fruit: { n: "guisante", e: "🟢" }, 
+                    anim: { n: "mariquita", e: "🐞" }, 
+                    facts: [
+                    "'03/10/2025: Ya se intuyen tus ojitos. Ocupas todo nuestro pensamiento.' Pero shhh, ¡é un secreto! Queremos ir a Eslovenia sin que nadie nos rompa a cabeza!",
+                    "'04/10/2025: Eslovenia nos espera y tú vienes de polizón. ¡No digas nada a nadie!'",
+                    "'05/10/2025: Tus 'botes' de brazos y piernas empiezan a asomar. ¡A nadar!'",
+                    "'06/10/2025: La mandíbula y el cuello se están formando. ¡Prepárate para las papillas!'",
+                    "'07/10/2025: Los latidos van a toda pastilla, casi el doble que los de mamá.'",
+                    "'08/10/2025: Tu nariz empieza a asomar. ¡Ya podrás oliscar cuando mamá cocine!'",
+                    "'09/10/2025: Último día como guisante. Mañana subes de nivel frutícola.'"
+                    ]
+                },
+                7: { 
+                    len: "9.5 mm", weight: "0", bpm: "130-150", 
+                    fruit: { n: "arándano", e: "🫐" }, 
+                    anim: { n: "abeja", e: "🐝" }, 
+                    facts: [
+                    "'10/10/2025: Tu cerebro crea miles de neuronas por minuto.' Serás o máis listo da casa (despois de papá claro).",
+                    "'11/10/2025: ¡Gran noticia para abuelos y tías! Id preparando los pañuelos para llorar.'",
+                    "'12/10/2025: Tu carita ya tiene fosas nasales. ¡A respirar en el duplex!'",
+                    "'13/10/2025: Los músculos empiezan a funcionar. ¡Pronto habrá gimnasia rítmica!'",
+                    "'14/10/2025: El cordón umbilical ya te pasa el menú del día. ¡Buen provecho!'",
+                    "'15/10/2025: Ya tienes párpados, aunque estarán cerrados un buen tiempo.'",
+                    "'16/10/2025: ¡Mañana cumplimos 2 meses de aventura! Cómo pasa el tiempo.'"
+                    ]
+                },
+                8: { 
+                    len: "1.6 cm", weight: "0", bpm: "150-170", 
+                    fruit: { n: "frambuesa", e: "🍇" }, 
+                    anim: { n: "caracolito", e: "🐌" }, 
+                    facts: [
+                    "'17/10/2025: Tus manos y pies ya tienen dedos, aunque todavía parecen pequeñas aletas. Estás preparándote para empezar a nadar.' Os teus queridos avós teñen piscina, así que... aprende ben a nadar!",
+                    "'18/10/2025: Primera eco y confirmación absoluta.' Casi non nolo creemos!",
+                    "'19/10/2025: Escuchar tu latido fue mejor que cualquier concierto.' Polo menos papá non se estaba durmindo",
+                    "'20/10/2025: Tu estómago y páncreas ya están en su sitio. ¡Haciendo hueco!'",
+                    "'21/10/2025: Ya no tienes 'colita' de embrión. ¡Ahora ya pareces un minihumano!'",
+                    "'22/10/2025: Tus rodillas y codos ya funcionan. ¡A doblar articulaciones!'",
+                    "'23/10/2025: Mañana dejas de ser un embrión oficialmente. ¡Menuda graduación!'"
+                    ]
+                },
+                9: { 
+                    len: "2.3 cm", weight: "0", bpm: "155-175", 
+                    fruit: { n: "cereza", e: "🍒" }, 
+                    anim: { n: "abejorro", e: "🐝" }, 
+                    facts: [
+                    "24/10/2025: Ya no eres un embrión, ¡ahora eres oficialmente un feto! Tus articulaciones empiezan a funcionar y no paras de moverte.' Papá tampouco para quieto, así que non te preocupes.",
+                    "'25/10/2025: Tus músculos ya pueden hacer contracciones. ¡Vaya baile te traes!'",
+                    "'26/10/2025: Los órganos reproductores se empiezan a formar. ¿Sorpresa o queremos saber?'",
+                    "'27/10/2025: Tu esqueleto empieza a endurecerse. ¡Huesos fuertes para correr!'",
+                    "'28/10/2025: Ya puedes tragar líquido amniótico. ¡Catador oficial!'",
+                    "'29/10/2025: Tus manos ya se encuentran en el pecho. ¡Modo zen activado!'",
+                    "'30/10/2025: Mañana serás una fresa. ¡Y mamá está trabajando 24/7 para eso!'"
+                    ]
+                },
+                10: { 
+                    len: "3.1 cm", weight: "35 g", bpm: "160-180", 
+                    fruit: { n: "fresa", e: "🍓" }, 
+                    anim: { n: "mariposa", e: "🦋" }, 
+                    facts: [
+                    "'31/10/2025: Tus órganos vitales ya están en su sitio y funcionando. Eres una pequeña obra maestra en miniatura.' Mamá está traballando 24/7 para eso.",
+                    "'01/11/2025: Tus uñas empiezan a crecer. ¡Cuidado con los arañazos!'",
+                    "'02/11/2025: Ya tienes brotes dentales. ¡Tus futuros dientes ya están ahí escondidos!'",
+                    "'03/11/2025: Tu columna vertebral es más clara ahora.' Ponte dereito!",
+                    "'04/11/2025: El diafragma se está formando. ¡Pronto tendrás hipo!'",
+                    "'05/11/2025: Ya nadas por todo el útero, aunque mamá aún no te siente.'",
+                    "'06/11/2025: Mañana pasamos a ser un higo. ¡Menudo estirón!'"
+                    ]
+                },
+                11: { 
+                    len: "4.1 cm", weight: "45 g", bpm: "150-170", 
+                    fruit: { n: "higo", e: "🥯" }, 
+                    anim: { n: "rana", e: "🐸" }, 
+                    facts: [
+                    "'07/11/2025: Te pasas el día estirándote y dando saltitos. Estás tan cómodo en tu piscina particular que no dejas de practicar gimnasia.' Normal, co pedazo dúplex que che ten instalado túa nai...",
+                    "'08/11/2025: Ya tienes reflejo de succión. ¡Entrenando para el biberón/pecho!'",
+                    "'09/11/2025: Tus folículos pilosos aparecen. ¿Saldrás con mucho pelo o como el abuelo?'",
+                    "'10/11/2025: Las orejas ya están casi en su sitio final. ¡A escuchar cotilleos!'",
+                    "'11/11/2025: Tus ovarios o testículos están completamente formados. ¡El secreto está ahí!'",
+                    "'12/11/2025: Empiezas a generar glóbulos blancos. ¡Tu ejército de defensa!'",
+                    "'13/11/2025: Mañana termina la fase más crítica. ¡A celebrarlo con una ciruela!'"
+                    ]
+                },
+                12: { 
+                    len: "5.4 cm", weight: "58 g", bpm: "120-160", 
+                    fruit: { n: "ciruela", e: "🟣" }, 
+                    anim: { n: "colibrí", e: "🐦" }, 
+                    facts: [
+                    "'14/11/2025: Tus riñones ya funcionan y tus reflejos están apareciendo. Si algo te toca la palma de la mano, ¡ya intentas cerrarla!' Carallo, por toma todos entenden, hasta con 12 semanas",
+                    "'15/11/2025: Tu sistema digestivo empieza a practicar contracciones. ¡A digerir!'",
+                    "'16/11/2025: Las cuerdas vocales se están formando. ¡Prepárate para los gritos!'",
+                    "'17/11/2025: Tu glándula pituitaria empieza a fabricar hormonas. ¡Tú también mandas!'",
+                    "'18/11/2025: El hígado empieza a producir bilis. ¡Todo en orden en la sala!'",
+                    "'19/11/2025: Ya tienes cara de humano total, con los ojos más centrados.'",
+                    "'20/11/2025: Mañana cerramos el primer trimestre. ¡Adiós a los miedos!' (O eso intentamos)."
+                    ]
+                },
+                13: { 
+                    len: "6.7 cm", weight: "73 g", bpm: "120-160", 
+                    fruit: { n: "limón", e: "🍋" }, 
+                    anim: { n: "pollito", e: "🐥" }, 
+                    facts: [
+                    "'21/11/2025: ¡Fin del primer trimestre! Ya tienes huellas en las yemas de tus dedos; eres un ser único e irrepetible.' Eso espero, que están todos preocupados porque teñas os TOCs que inventan por ahí que ten teu pai...",
+                    "'22/11/2025: Esperemos que no heredes los TOCs de papá... ¡sería un caos!'",
+                    "'23/11/2025: Tus intestinos se mudan del cordón umbilical al abdomen. ¡Mudanza!'",
+                    "'24/11/2025: Tu piel empieza a cubrirse de lanugo. ¡Un pijama de pelo suave!'",
+                    "'25/11/2025: Ya puedes saborear el líquido amniótico. ¿A qué sabe hoy la comida de mamá?'",
+                    "'26/11/2025: Mides como un limón pero pesas como un huevo. ¡Menudo pollito!'",
+                    "'27/11/2025: Mañana entramos en la fase de 'crecer y brillar'.'"
+                    ]
+                },
+                14: { 
+                    len: "14.7 cm", weight: "93 g", bpm: "120-160", 
+                    fruit: { n: "melocotón", e: "🍑" }, 
+                    anim: { n: "hámster", e: "🐹" }, 
+                    facts: [
+                    "''28/11/2025: Tus rasgos faciales se están recolocando. Ya puedes hacer gestos y hasta chuparte el dedo cuando tienes sueño.' Practica ben a comer o dedo cando teñas fame, que vas listo como lle pidas comida a papá",
+                    "'29/11/2025: Tu cuello se alarga y la cabeza ya no está apoyada en el pecho.' ¡Mira arriba!",
+                    "'30/11/2025: El sentido del gusto se está afinando. ¡Mamá, dale al chocolate!'",
+                    "'01/12/2025: Tus latidos se escuchan ya con un Doppler sencillo. ¡Qué música!'",
+                    "'02/12/2025: Tus brazos ya son proporcionales a tu cuerpo. ¡A estirarse!'",
+                    "'03/12/2025: Empiezas a producir hormonas tiroideas. ¡Control de energía!'",
+                    "'04/12/2025: Mañana serás una manzana. ¡A morder la vida!'"
+                    ]
+                },
+                15: { 
+                    len: "16.7 cm", weight: "117 g", bpm: "120-160", 
+                    fruit: { n: "manzana", e: "🍎" }, 
+                    anim: { n: "erizo", e: "🦔" }, 
+                    facts: [
+                    "'05/12/2025: Tu piel es todavía muy fina, pero ya te está creciendo un pelito muy suave llamado lanugo para mantenerte caliente.' En este paso, si te pareces a mamá irache mellor",
+                    "'06/12/2025: Tus huesos siguen endureciéndose. ¡Mucho calcio para ese esqueleto!'",
+                    "'07/12/2025: Ya puedes percibir la luz a través de los párpados cerrados.' ¡Hola sol!",
+                    "'08/12/2025: Tus tres huesos del oído medio se están osificando. ¡Oído cocina!'",
+                    "'09/12/2025: El patrón de tu cuero cabelludo ya se está decidiendo. ¿Rizos?'",
+                    "'10/12/2025: Haces ejercicios respiratorios con el líquido. ¡Inhala, exhala!'",
+                    "'11/12/2025: Mañana serás un aguacate. ¡La fruta favorita de los modernos!'"
+                    ]
+                },
+                16: { 
+                    len: "18.6 cm", weight: "146 g", bpm: "120-160", 
+                    fruit: { n: "aguacate", e: "🥑" }, 
+                    anim: { n: "ardilla", e: "🐿️" }, 
+                    facts: [
+                    "'12/12/2025: ¡Primeras pataditas! Mamá pronto empezará a sentir tus movimientos. Es tu forma de decirnos: hola, estoy aquí.' E de que cada vez que mamá di que te estás movendo e poñemos a man paras, nin que estuveras xogando ao escondite...",
+                    "'13/12/2025: Tu sistema nervioso está conectando todo a una velocidad de vértigo.'",
+                    "'14/12/2025: Ya puedes tener hipo, pero como es en líquido, no suena. ¡Sólo se siente!'",
+                    "'15/12/2025: Tu corazón bombea unos 25 litros de sangre al día. ¡Vaya motor!'",
+                    "'16/12/2025: Ya tienes uñas en los pies. ¡Listo para las sandalias!'",
+                    "'17/12/2025: Tu coordinación mejora. ¡Ya te agarras el cordón umbilical!'",
+                    "'18/12/2025: Mañana pasas de aguacate a granada. ¡Explosión de crecimiento!'"
+                    ]
+                },
+                17: { 
+                    len: "20.4 cm", weight: "181 g", bpm: "120-160", 
+                    fruit: { n: "granada", e: "🍎" }, 
+                    anim: { n: "cobaya", e: "🐹" }, 
+                    facts: [
+                    "'19/12/2025: Tus oídos están casi formados. Ya puedes escuchar los latidos del corazón de mamá y su voz cuando te habla.' Susurrando: Lucaa. Fala papá. Compadézote. Ánimo, prometo sacarte de ahí",
+                    "'20/12/2025: Empiezas a acumular grasa bajo la piel. ¡A ponerse hermosote!'",
+                    "'21/12/2025: Tus huellas dactilares y de los pies están terminadas. ¡Único!'",
+                    "'22/12/2025: Si hay un ruido fuerte fuera, ¡puedes dar un salto de susto!'",
+                    "'23/12/2025: La mielina empieza a rodear tus nervios. ¡Transmisión de datos 5G!'",
+                    "'24/12/2025: ¡Nochebuena! El mejor regalo está dentro de mamá.'",
+                    "'25/12/2025: ¡Navidad! El año que viene habrá un plato más en la mesa.'"
+                    ]
+                },
+                18: { 
+                    len: "22.2 cm", weight: "223 g", bpm: "120-160", 
+                    fruit: { n: "pimiento", e: "🫑" }, 
+                    anim: { n: "ardilla roja", e: "🐿️" }, 
+                    facts: [
+                    "'26/12/2025: Estás muy activo y tus huesos se están volviendo más fuertes y necesitas dormir.' Non te pases durmindo ahora, que cando saias tamén hai que durmir eh!",
+                    "'27/12/2025: Si eres niña, tus óvulos ya están en tus ovarios. ¡Tres generaciones juntas!'",
+                    "'28/12/2025: Día de los Inocentes. ¡No nos des ningún susto hoy, eh!'",
+                    "'29/12/2025: Tus gesticulaciones son cada vez más complejas. ¡Haznos una sonrisa!'",
+                    "'30/12/2025: Estás enviando señales al cerebro sobre tu posición. ¡Acrobacias!'",
+                    "'31/12/2025: Fin de año. El 2026 será el año en que nos cambies la vida.'",
+                    "'01/01/2026: ¡Feliz año nuevo! El año de tu nacimiento ya está aquí.'"
+                    ]
+                },
+                19: { 
+                    len: "24.0 cm", weight: "273 g", bpm: "120-160", 
+                    fruit: { n: "mango", e: "🥭" }, 
+                    anim: { n: "patito", e: "🦆" }, 
+                    facts: [
+                    "'02/01/2026: Se está formando la vérnix, una capa protectora en tu piel. Estás preparándote para ponerte guapo para tu gran estreno.' Terás fotos para parar un tren, a ver ahora si mamá ten espacio libre no móvil e se digna a subir as cousas á NAS algún día...",
+                    "'03/01/2026: Tus sentidos (oído, olfato, vista, tacto, gusto) están en pleno desarrollo.'",
+                    "'04/01/2026: Ya tienes un horario de sueño. Lástima que no coincida con el de mamá.'",
+                    "'05/01/2026: ¡Noche de Reyes! El año que viene te traerán muchos juguetes.'",
+                    "'06/01/2026: ¿Qué te han traído los Reyes? De momento, ¡mucho cariño!'",
+                    "'07/01/2026: Tu cerebro está designando las áreas para cada sentido.'",
+                    "'08/01/2026: Mañana llegamos al ecuador del embarazo. ¡20 semanas!'"
+                    ]
+                },
+                20: { 
+                    len: "25.7 cm", weight: "331 g", bpm: "120-160", 
+                    fruit: { n: "plátano", e: "🍌" }, 
+                    anim: { n: "perrito pradera", e: "🐿️" }, 
+                    facts: [
+                    "'09/01/2026: ¡Mitad de camino superado! Ya hemos recorrido 20 semanas juntos.' Tic-tac, empeza a conta atrás!",
+                    "'10/01/2026: Ya pesas más que la placenta. ¡Eres el jefe del lugar!'",
+                    "'11/01/2026: Tu piel es menos transparente ahora. ¡Te estás poniendo guapo!'",
+                    "'12/01/2026: Empiezas a producir meconio. ¡Tus primeras caquitas se están preparando!'",
+                    "'13/01/2026: El útero de mamá llega ya a la altura del ombligo. ¡Creciendo!'",
+                    "'14/01/2026: Tus cejas son cada vez más espesas. ¡Vaya mirada vas a tener!'",
+                    "'15/01/2026: Mañana pasamos a ser una patata. ¡Pero de las ricas!'"
+                    ]
+                },
+                21: { 
+                    len: "27.4 cm", weight: "399 g", bpm: "120-160", 
+                    fruit: { n: "patata", e: "🥔" }, 
+                    anim: { n: "gatito", e: "🐱" }, 
+                    facts: [
+                    "'16/01/2026: Tus papilas gustativas están desarrolladas. ¡Ya empiezas a saborear lo que mamá come a través del líquido amniótico!' Cando mamá che dé potitos, dille que non estás acostumbrado, que preferías chocolate que estaba máis rico.",
+                    "'17/01/2026: Tu médula ósea empieza a producir glóbulos rojos. ¡Fábrica a tope!'",
+                    "'18/01/2026: Te mueves unas 50 veces por hora, aunque mamá no las sienta todas.'",
+                    "'19/01/2026: Tus párpados siguen cerrados, pero tus ojos se mueven por debajo.'",
+                    "'20/01/2026: El sentido del tacto es tu favorito ahora. ¡Lo tocas todo!'",
+                    "'21/01/2026: Estás ganando peso de forma constante. ¡Esa barriguita!'",
+                    "'22/01/2026: Mañana serás una mazorca de maíz. ¡Qué rico!'"
+                    ]
+                },
+                22: { 
+                    len: "29.0 cm", weight: "478 g", bpm: "120-160", 
+                    fruit: { n: "mazorca", e: "🌽" }, 
+                    anim: { n: "conejo", e: "🐰" }, 
+                    facts: [
+                    "'23/01/2026: Tus cejas y pestañas ya están en su sitio. Tu cara ya tiene el aspecto que veremos el día que nazcas.' Se eres guapo o mérito é de papá, senón, a culpa é de mamá que é a que está traballando as 24 horas",
+                    "'24/01/2026: Tu cerebro está en una fase de crecimiento explosivo.'",
+                    "'25/01/2026: Ya tienes labios bien definidos. ¡Listo para los besos!'",
+                    "'26/01/2026: Los dientes que hay bajo tus encías están creando esmalte.'",
+                    "'27/01/2026: Tu sistema linfático se está desarrollando. ¡Salud!'",
+                    "'28/01/2026: Ya tienes el aspecto de un recién nacido, pero en miniatura.'",
+                    "'29/01/2026: Mañana serás un pomelo. ¡A por la semana 23!'"
+                    ]
+                },
+                23: { 
+                    len: "30.6 cm", weight: "568 g", bpm: "120-160", 
+                    fruit: { n: "pomelo", e: "🍊" }, 
+                    anim: { n: "hurón", e: "🦦" }, 
+                    facts: [
+                    "'30/01/2026: Tu piel se está volviendo menos transparente y empiezas a ganar un poquito de peso.' Mamá empeza a decir que lle moviche o centro de gravedad. Ahora serás un hurón, e mamá... un pingüino...",
+                    "'31/01/2026: Tus pulmones empiezan a producir surfactante para poder respirar aire.'",
+                    "'01/02/2026: Tu oído interno está tan desarrollado que ya tienes equilibrio.'",
+                    "'02/02/2026: Si nacieras ahora, tendrías posibilidades con cuidados intensivos. ¡Pero quédate ahí!'",
+                    "'03/02/2026: Los vasos sanguíneos de tus pulmones se están multiplicando.'",
+                    "'04/02/2026: Ya notas cuando papá te habla desde fuera. ¡Hola, hola!'",
+                    "'05/02/2026: Cerramos la semana del pomelo. ¡Eres un campeón/a!'"
+                    ]
+                },
+			    24: { 
+                    len: "32.2 cm", weight: "670 g", bpm: "120-160", 
+                    fruit: { n: "berenjena", e: "🍆" }, 
+                    anim: { n: "zorrito", e: "🦊" }, 
+                    facts: [
+                    "'06/02/2026: ¡Ya nos oyes perfectamente!' Si papá che fala, faille caso. Si é mamá... non creo que seas capaz, non cala en todo o día!",
+                    "'07/02/2026: Tu oído interno ya está formado. ¡Cuidado con los gritos cuando hay gol en la tele!'",
+                    "'08/02/2026: Ya tienes equilibrio y sabes si estás cabeza arriba o abajo. ¡Vaya astronauta!'",
+                    "'09/02/2026: Tus pulmones empiezan a fabricar surfactante. ¡Preparando el motor para el aire!'",
+                    "'10/02/2026: Tu piel está dejando de ser arrugada y se rellena. ¡Te estás poniendo hermoso!'",
+                    "'11/02/2026: Si mamá nota un saltito rítmico, ¡es que tienes hipo! No te desesperes, pequeño.'",
+                    "'12/02/2026: Mañana cambiamos de fruta. ¡Último día como berenjena saltarina!'"
+                    ]
+                },
+                25: { 
+                    len: "33.7 cm", weight: "785 g", bpm: "120-160", 
+                    fruit: { n: "uvas", e: "🍇" }, 
+                    anim: { n: "chinchilla", e: "🐭" }, 
+                    facts: [
+                    "'13/02/2026: Tus pulmones están desarrollando los vasos sanguíneos para poder respirar aire pronto.' Cuidadito cos choros eh!",
+                    "'14/02/2026: ¡San Valentín! El amor de nuestras vidas mide 33 cm y no para de dar patadas.'",
+                    "'15/02/2026: Tus fosas nasales se abren hoy. ¡Practicando para oler las comiditas de casa!'",
+                    "'16/02/2026: Tu columna vertebral se hace más fuerte para aguantar todo lo que vas a correr.'",
+                    "'17/02/2026: Tienes ya un ciclo de sueño definido. ¡Por favor, intenta que coincida con el nuestro!'",
+                    "'18/02/2026: Tus manos ya están totalmente formadas. ¡Qué ganas de que nos agarres un dedo!'",
+                    "'19/02/2026: Mañana dejamos de ser un racimo de uvas para ser un nabo. ¡Menudo cambio!'"
+                    ]
+                },
+                26: { 
+                    len: "35.1 cm", weight: "913 g", bpm: "120-160", 
+                    fruit: { n: "nabo", e: "🥕" }, 
+                    anim: { n: "zorro desierto", e: "🦊" }, 
+                    facts: [
+                    "'20/02/2026: Tus ojos empiezan a entreabrirse. Muy pronto podrás ver la luz que entra desde fuera.' Con suerte, fará sol algún día, porque túa nai e a luz...",
+                    "'21/02/2026: Ya tienes pestañas. ¡Vas a tener una mirada que nos va a derretir a todos!'",
+                    "'22/02/2026: Tu respuesta a los sonidos es cada vez más clara. ¡Si papá canta, no te asustes!'",
+                    "'23/02/2026: El sistema nervioso central sigue madurando. ¡Estás conectando todos los cables!'",
+                    "'24/02/2026: Ya pesas casi un kilo. ¡Mamá ya empieza a notar que llevas una mochila del revés!'",
+                    "'25/02/2026: Inhalas y exhalas líquido amniótico. ¡Eres un buceador profesional!'",
+                    "'26/02/2026: Mañana entramos en el tercer y último trimestre. ¡Esto se pone serio!'"
+                    ]
+                },
+                27: { 
+                    len: "36.6 cm", weight: "1.06 kg", bpm: "120-160", 
+                    fruit: { n: "coliflor", e: "🥦" }, 
+                    anim: { n: "koala mini", e: "🐨" }, 
+                    facts: [
+                    "'27/02/2026: Sus ojos se abren por primera vez y ya puede parpadear. Está practicando la mirada de 'yo no he sido' cuando rompa algo.' Aínda que che vai costar superar a San David",
+                    "'28/02/2026: ¡Ya pesas más de un kilo! Eres oficialmente una coliflor de peso pesado.'",
+                    "'01/03/2026: Tu cerebro ya tiene esos surcos tan característicos. ¡Aumentando la potencia de procesado!'",
+                    "'02/03/2026: Tu tejido graso sigue aumentando. ¡A ponerse redondito para no pasar frío!'",
+                    "'03/03/2026: El sentido del gusto está a tope. ¡Seguro que ya sabes cuándo mamá toma algo rico!'",
+                    "'04/03/2026: Tu red de nervios hacia los oídos está terminada. ¡Escuchas hasta los susurros de papá!'",
+                    "'05/03/2026: Mañana serás un coco. ¡A ver quién es el guapo que te abre!'"
+                    ]
+                },
+                28: { 
+                    len: "37.9 cm", weight: "1.21 kg", bpm: "120-160", 
+                    fruit: { n: "coco", e: "🥥" }, 
+                    anim: { n: "perezoso", e: "🦥" }, 
+                    facts: [
+                    "'06/03/2026: ¡Ya sueña! Su actividad cerebral es muy intensa mientras duerme' (O da actividad cerebral é cousa de mamá sin duda!",
+                    "'07/03/2026: ¿Con qué soñarás? Seguro que con batidos ricos y con conocernos al fin.'",
+                    "'08/03/2026: Tu médula ósea se ha encargado totalmente de producir glóbulos rojos. ¡Autónomo!'",
+                    "'09/03/2026: Tus ojos ya se mueven en sus órbitas. ¡No te pierdas detalle de tu duplex!'",
+                    "'10/03/2026: El lanugo (ese pelito de mono) empieza a desaparecer. ¡Te estás limpiando para la gala!'",
+                    "'11/03/2026: Ya ocupas casi todo el espacio. ¡Normal que mamá se mueva como un pingüino!'",
+                    "'12/03/2026: Último día como coco. Mañana pasamos a la calabaza. ¡Menudo melón!'"
+                    ]
+                },
+                29: { 
+                    len: "39.2 cm", weight: "1.37 kg", bpm: "120-160", 
+                    fruit: { n: "calabaza", e: "🎃" }, 
+                    anim: { n: "pato", e: "🦆" }, 
+                    facts: [
+                    "''13/03/2026: Sus huesos se están endureciendo, aunque el cráneo seguirá siendo flexible.' Aproveita para endurecer ben os dentes, por favor non te parezas a teu pai...'",
+                    "'14/03/2026: Tu cabeza crece para dejar sitio al cerebro. ¡Vas a ser un genio de la informática!'",
+                    "'15/03/2026: Estás almacenando hierro, calcio y fósforo. ¡Eres un pequeño búnker de nutrientes!'",
+                    "'16/03/2026: Tus movimientos son más de 'empujar' que de dar patadas. ¡Te falta sitio, lo sabemos!'",
+                    "'17/03/2026: El sistema inmunológico recibe sus primeras defensas de mamá. ¡Escudo activado!'",
+                    "'18/03/2026: Tu piel está más suave que nunca. ¡Ganas de darte un bocado en esos mofletes!'",
+                    "'19/03/2026: ¡Día del Padre! El mejor regalo que me puedes hacer es seguir así de bien ahí dentro.'"
+                    ]
+                },
+			30: {
+				len: "40.5 cm", weight: "1.55 kg", bpm: "120-160",
+				fruit: { n: "col", e: "🥬" },
+				anim: { n: "nutria mini", e: "🦦" },
+				facts: [
+					"'20/03/2026: Empieza a imitar movimientos respiratorios para practicar fuera del útero.' Básicamente está ensayando para os berrinches.",
+					"'21/03/2026: Sus ciclos de sueño son más claros. Si se mueve mucho ahora, es que está de fiesta.' A Luca débelle gustar a festa como a mamá...",
+					"'22/03/2026: El sistema digestivo ya está casi listo.' Hai que ir preparando os biberóns, que este vén con fame de serie co pai que ten",
+					"'23/03/2026: Sus pataditas son ahora más fuertes porque tiene menos espacio.' Mamá, prepárate para o pressing catch nocturno.",
+					"'24/03/2026: El cerebro sigue creando conexiones a toda velocidad.' Está planeando cómo chantajearnos a todos para salirse ca súa",
+					"'25/03/2026: Sus ojos ya se abren y cierran según si está dormido o despierto.' Vigilando discretamente o que fai mamá, para copialo e pedirlle chocolate en vez de potitos",
+					"'26/03/2026: Ya tiene un tamaño considerable, como una col grande.' E mamá camiña xa como si levara unha sandía de 5 kilos"
+				]
+			},
+			31: {
+				len: "41.8 cm", weight: "1.75 kg", bpm: "120-160",
+				fruit: { n: "calabacín", e: "🥒" },
+				anim: { n: "mono", e: "🐒" },
+				facts: [
+					"'27/03/2026: Sus sentidos están alerta: ya diferencia entre luz tenue y oscuridad.' Malas noticias! Sabrá perfectamente cando son as 3 da mañán para pedir festa.",
+					"'28/03/2026: Sus pulmones siguen madurando.' En nada xa o escoitan en Valença sin necesidad de teléfono.",
+					"'29/03/2026: El espacio en el útero es cada vez más VIP.' Luca está pensando en pedir unha ampliación de hipoteca.",
+					"'30/03/2026: Ya puede girar la cabeza de un lado a otro.' Buscando onde está o chocolate que se acaba de comer mamá.",
+					"'31/03/2026: Sus huesos siguen endureciéndose.' Necesita moito calcio, así que mamá, a por chocolate! Digo... a por el queso fresco batido!",
+					"'01/04/2026: La piel ya no es tan transparente, se vuelve más rosadita.' Xa se está poñendo guapo para poder subir fotos a Insta sin filtro.",
+					"'02/04/2026: Empieza a acumular grasa bajo la piel.' Está creando ese efecto 'michelín' para as fotos"
+				]
+			},
+			32: {
+				len: "43.0 cm", weight: "1.95 kg", bpm: "120-160",
+				fruit: { n: "apio", e: "🌿" },
+				anim: { n: "mapache mini", e: "🦝" },
+				facts: [
+					"'03/04/2026: Ya tiene uñas en los dedos de las manos y de los pies.' Outro mantenimiento semanal que sumar á lista de tareas de mamá...",
+					"'04/04/2026: La mayoría de los bebés ya se ponen cabeza abajo esta semana.' Luca vai sobrado, xa fai semanas que ten más que controlado o pino.",
+					"'05/04/2026: Sus papilas gustativas están a tope.' Nota perfectamente si a papá lle saliu ben a comida.",
+					"'06/04/2026: Practica la succión con su propio dedo pulgar.' Entrenando para cando chegue o chupete, a ver quen llo quita despois",
+					"'07/04/2026: Su cerebro ya puede procesar información de los cinco sentidos.' Xa nos juzga en silencio...",
+					"'08/04/2026: El líquido amniótico está en su nivel máximo.' Luca está tan contento como estaría mamá nas termas de Ourense.",
+					"'09/04/2026: El bebé ya mide como un apio largo.' Pero pesa bastante máis, verdad mamá?"
+				]
+			},
+			33: {
+				len: "44.0 cm", weight: "2.16 kg", bpm: "120-160",
+				fruit: { n: "piña", e: "🍍" }, anim: { n: "zorrito", e: "🦊" },
+				facts: [
+					"'10/04/2026: Su sistema inmunológico recibe los anticuerpos de mamá. El primer escudo contra los virus' E contra os mofletes das tías e avoas 😒",
+					"'11/04/2026: Sus huesos se endurecen, excepto los del cráneo.' Menos mal, que senón a ver quen sale de aquí!",
+					"'12/04/2026: Ya distingue perfectamente el día de la noche.' Aínda que xa ten decidido que a noite é para ir de festa, mamá, esta vai por ti.",
+					"'13/04/2026: El cerebro de Luca ya tiene billones de neuronas.' Suficientes para saber que papá es el que se come los postres.",
+					"'14/04/2026: Sus pulmones están produciendo surfactante.' Preparando o motor para o primeiro choro a pleno pulmón",
+					"'15/04/2026: El bebé ya tiene poco espacio para piruetas.' Ahora dedícase a dar patadas directas ás costillas de mamá.",
+					"'16/04/2026: Luca ya pesa como una piña grande.' E mamá xa non sabe cómo poñerse para durmir"
+				]
+			},
+			34: {
+				len: "45.2 cm", weight: "2.37 kg", bpm: "120-160",
+				fruit: { n: "melón", e: "🍈" }, anim: { n: "canguro mini", e: "🦘" },
+				facts: [
+					"'17/04/2026: Sus pulmones están casi listos para respirar.' E para o *Do* de peito non seus primeiros concertos nocturnos!",
+					"'18/04/2026: El sistema nervioso central está madurando.' Luca xa sabe quen manda (spoiler: mamá).",
+					"'19/04/2026: Sus riñones están funcionando a tope.' Básicamente, Luca é unha fábrica de pis ahora mismo (como papá)",
+					"'20/04/2026: La grasa corporal ya supone un 15% de su peso.' Nada de pasar de ahí eh, senón papá prepárache unha dieta de arroz, polo e verduras",
+					"'21/04/2026: Sus ojos reaccionan a la luz de fuera.' Imos ter que entrenar esto cando saias, que con mamá non vas ter moita luz",
+					"'22/04/2026: Las uñas ya llegan a la punta de los dedos.' Ide comprando a lima, que vén con garras de lobezno.",
+					"'23/04/2026: Ya mide como un melón de los buenos.' Solo falta que traia a etiqueta de 'Calidad Extra'."
+				]
+			},
+			35: {
+				len: "46.3 cm", weight: "2.59 kg", bpm: "120-160",
+				fruit: { n: "melón verde", e: "🍈" }, anim: { n: "corderito", e: "🐑" },
+				facts: [
+					"'24/04/2026: El cerebro crece rápido; ya tiene casi todas las neuronas que tendrá al nacer.' Xa pode calcular os segundos exactos que vai tardar mamá en ceder e collelo no colo ao máis mínimo choro.",
+					"'25/04/2026: El 99% de los bebés nacidos ahora sobreviven sin problemas.' Luca xa ten o billete de salida casi validado.",
+					"'26/04/2026: Sus movimientos son más de 'rodar' que de golpear.' Parece que mamá ten un pequeno balón de fútbol ahí dentro.",
+					"'27/04/2026: Luca empieza a descender hacia la pelvis.' Baixando á planta 0 para a salida de emergencia.",
+					"'28/04/2026: El útero está unas 15 veces más grande que al principio.' Mamá confirma que se sinte como un globo de helio.",
+					"'29/04/2026: Luca ya escucha música y reconoce melodías.' Seguro que a estas alturas xa se sabe as cancións mellor que mamá e papá.",
+					"'30/04/2026: Pesa como un melón verde.' Redondito, pesado e moi, moi esperado."
+				]
+			},
+			36: {
+				len: "47.3 cm", weight: "2.81 kg", bpm: "120-160",
+				fruit: { n: "repollo", e: "🥬" }, anim: { n: "gato", e: "🐈" },
+				facts: [
+					"'01/05/2026: Está ganando una capa de grasa para mantener el calor.' É a súa perdición para os: ai, que bochechiñas ten Luca!",
+					"'02/05/2026: El vello fino (lanugo) empieza a desaparecer.' Ten que ir afeitadiño para a primeira cita con mamá.",
+					"'03/05/2026: Ya casi no tiene líquido amniótico porque él lo ocupa todo.' Luca ten o apartamento colonizado por completo.",
+					"'04/05/2026: El hígado está empezando a procesar desechos.' Traballando duro mentras mamá descansa (ou o intenta).",
+					"'05/05/2026: Sus encías son muy firmes.' Preparadas para morder todo o que pille nuns meses.",
+					"'06/05/2026: Ya tiene el tamaño de un repollo.' Dos que alimentan de verdad.",
+					"'07/05/2026: Queda muy poco' Luca está empezando a recoller todo para irse"
+				]
+			},
+			37: {
+				len: "48.3 cm", weight: "3.02 kg", bpm: "120-160",
+				fruit: { n: "puerro", e: "🥗" }, anim: { n: "perrito", e: "🐶" },
+				facts: [
+					"'08/05/2026: ¡Ya se considera a término temprano!' Está na porta ca maleta feita, esperando o 'Uber' ao hospital.",
+					"'09/05/2026: Sus pulmones son capaces de respirar aire por sí solos.' O primeiro grito está cargando ao 95%.",
+					"'10/05/2026: Ya tiene bastante pelo en la cabecita.' Se é hereditario aínda lle vai pinchar a barriga a mamá.",
+					"'11/05/2026: Practica el agarre con las manos.' Mamá, coidado co pelo!",
+					"'12/05/2026: Luca ya tiene sus propios patrones de sueño.' Lástima que non coincidan cos de mamá e papá.",
+					"'13/05/2026: Su peso ya supera los 3 kilos.' Unha bolsa de naranxas, pero moito máis ruidosa.",
+					"'14/05/2026: Ya mide casi 50 cm.' Xa lle queda pouco para ser como a tía de Carral"
+				]
+			},
+			38: {
+				len: "49.2 cm", weight: "3.23 kg", bpm: "120-160",
+				fruit: { n: "papaya", e: "🥭" }, anim: { n: "cabrita", e: "🐐" },
+				facts: [
+					"'15/05/2026: El color de sus ojos es un misterio.' Sendo verano, a ver si mamá non che pon gafas e chos podemos ver.",
+					"'16/05/2026: Sus órganos funcionan de forma independiente.' Luca é un ser autónomo, pero que non se entere hacienda que aínda lle van facer pagar a cuota de autónomos.",
+					"'17/05/2026: La placenta empieza a envejecer.' O hotel de 5 estrellas está a punto de cerrar por fin de temporada.",
+					"'18/05/2026: Luca está encajado y listo.' Xa pode ver a luz ao final do túnel.",
+					"'19/05/2026: Sus movimientos son lentos por falta de espacio.' Está como no bochinche de Carral para pedir algo.",
+					"'20/05/2026: El corazón de Luca late con fuerza.' ¡Pum-pum! O sonido máis bonito do mundo.",
+					"'21/05/2026: Ya pesa como una papaya grande.' Tic-tac tic-tac tic-tac."
+				]
+			},
+			39: {
+				len: "50.1 cm", weight: "3.43 kg", bpm: "110-150",
+				fruit: { n: "calabacín", e: "🥒" }, anim: { n: "foca junior", e: "🦭" },
+				facts: [
+					"'22/05/2026: Sus intestinos acumulan meconio.' Tranquilos todos! Papá está preparado (ou eso cree o inconsciente)!",
+					"'23/05/2026: Luca ya es del tamaño de un recién nacido medio.' Xa non hai volta atrás, a conta atrás é real!",
+					"'24/05/2026: El cerebro sigue creciendo.' Suficiente para saber que a paciencia de mamá escasea.",
+					"'25/05/2026: Sus reflejos son perfectos.' Si lle tocas un pé, dache unha patada, deixádeme tranquilo!.",
+					"'26/05/2026: La piel está suave y sin arrugas.' Un cutis sin ojeras que vai ser a envidia de mamá.",
+					"'27/05/2026: Luca está esperando el momento perfecto.' É un estratega, quere salir cando haxa boa luz para salir ben nas fotos.",
+					"'28/05/2026: Luca ya es una foca junior.' ¡Al agua patos (o a la vida)!"
+				]
+			},
+			40: {
+				len: "51.0 cm", weight: "3.61 kg", bpm: "110-150",
+				fruit: { n: "calabaza", e: "🎃" }, anim: { n: "guepardo", e: "🐆" },
+				facts: [
+					"'29/05/2026: Día oficial de salida.' Luca ha decidido que el sofá de mamá mola más.",
+					"'30/05/2026: Luca tiene el tamaño perfecto para conocer el mundo.' Ou me sacades dunha vez ou múdome de piso!",
+					"'31/05/2026: El bebé está totalmente formado.' Cando se vai a acabar a tortura de escoitar a mamá 24 sobre 24?",
+					"'01/06/2026: Las contracciones pueden empezar en cualquier momento.' Papá, ten as chaves preparadas e con sentidiño!",
+					"'02/06/2026: Luca ya no tiene nada de vello fino.' Está impecable para o gran estreno.",
+					"'03/06/2026: El cordón umbilical le pasa todos los nutrientes.' Nótase a genética de papá, Luca está aproveitando o buffet libre hasta o último momento.",
+					"'04/06/2026: Ya pesa como una calabaza.' E mamá síntese como si levara un camión!"
+				]
+			},
+			41: {
+				len: "51.0 cm", weight: "3.61 kg", bpm: "110-150",
+				fruit: { n: "sandía", e: "🍉" }, anim: { n: "leoncito", e: "🦁" },
+				facts: [
+					"'05/06/2026: Está muy cómodo, pero el viaje tiene que terminar.' Parece mamá, non quere que se lle acabe a vida de sofá.",
+					"'06/06/2026: El médico ya está mirando el reloj.' Esperemos non chegar a este momento, pero como non saias ti ímoste sacar nós.",
+					"'07/06/2026: Cualquier pequeño síntoma es una señal.' Será ahora, en 5 minutos, mañá? Que presión!",
+					"'08/06/2026: El bebé está listo para su primera bocanada de aire.' Os seus pulmóns queren estrenarse xa de xa.",
+					"'09/06/2026: Todo el mundo pregunta: ¿aún nada?' Pois xa ves, e tan tranquilo.",
+					"'10/06/2026: Luca, eres o jefe, pero xa toca conocer aos súbditos (mamá e papá).'",
+					"'11/06/2026: El gran día está aquí. ¡Bienvenido al mundo, Luca!'"
+				]
+			}
+		};
 
         const ctx = document.getElementById('progressChart').getContext('2d');
         const gradient = ctx.createLinearGradient(0, 0, 0, 400);
@@ -309,22 +861,60 @@
         
         function changeWeek(dir) { 
             const now = new Date(); 
-            const totalDaysElapsed = Math.floor((now - startDate) / (1000 * 60 * 60 * 24)); 
+            const elapsed = Math.max(0, now - startDate);
+            const totalDaysElapsed = Math.floor(elapsed / (1000 * 60 * 60 * 24)); 
             const actualWeek = Math.floor(totalDaysElapsed / 7); 
             const targetWeek = (actualWeek + manualWeekOffset) + dir; 
+            
             if (targetWeek >= 0 && targetWeek <= 41) { 
                 manualWeekOffset += dir; 
+                manualDayIndex = -1; // Al cambiar de semana, reseteamos la selección del día
                 update(); 
             } 
+        }
+
+        function changeDay(dir) {
+            const now = new Date();
+            const elapsed = Math.max(0, now - startDate);
+            const totalDaysElapsed = Math.floor(elapsed / (1000 * 60 * 60 * 24));
+            const actualWeek = Math.floor(totalDaysElapsed / 7);
+            const actualDayOfWeek = totalDaysElapsed % 7;
+            const displayWeek = actualWeek + manualWeekOffset;
+
+            // Encontramos el índice de día actual basándonos en si habíamos navegado a él antes
+            let currentDayIdx = manualDayIndex !== -1 ? manualDayIndex : (displayWeek === actualWeek ? actualDayOfWeek : 0);
+            currentDayIdx += dir;
+
+            if (currentDayIdx > 6) {
+                // Saltar a la próxima semana, día 1 (índice 0)
+                if (displayWeek < 41) {
+                    manualWeekOffset += 1;
+                    manualDayIndex = 0;
+                } else {
+                    currentDayIdx = 6; // Tope
+                }
+            } else if (currentDayIdx < 0) {
+                // Volver a la semana anterior, día 7 (índice 6)
+                if (displayWeek > 0) {
+                    manualWeekOffset -= 1;
+                    manualDayIndex = 6;
+                } else {
+                    currentDayIdx = 0; // Tope
+                }
+            } else {
+                manualDayIndex = currentDayIdx;
+            }
+            update();
         }
 
         function formatVal(val) { return (val === "0" || val === 0 || val === "0 g" || val === "0 mm") ? "—" : val; }
 
         function update() {
             const now = new Date();
-            const elapsed = now - startDate;
+            const elapsed = Math.max(0, now - startDate);
             const remaining = Math.max(0, endDate - now);
             const progress = Math.min(Math.max((elapsed / totalDuration) * 100, 0), 100);
+            
             progressChart.data.datasets[0].data = [progress, 100 - progress];
             progressChart.update('none');
             document.getElementById('percentage-center').innerText = progress.toFixed(2) + '%';
@@ -332,33 +922,58 @@
             
             const totalDaysElapsed = Math.floor(elapsed / (1000 * 60 * 60 * 24));
             const actualWeek = Math.floor(totalDaysElapsed / 7);
-            const extraDays = totalDaysElapsed % 7;
+            const actualDayOfWeek = totalDaysElapsed % 7;
             
             let displayWeek = actualWeek + manualWeekOffset;
-            let dataWeek = (displayWeek < 0) ? 0 : (displayWeek > 41 ? 41 : displayWeek);
-            const currentData = weekData[dataWeek];
+            if (displayWeek < 0) displayWeek = 0;
+            if (displayWeek > 41) displayWeek = 41;
+
+            // Determina qué día exacto mostramos dentro de esa semana
+            let currentDayIdx = manualDayIndex !== -1 ? manualDayIndex : (displayWeek === actualWeek ? actualDayOfWeek : 0);
+            if(currentDayIdx < 0) currentDayIdx = 0;
+            if(currentDayIdx > 6) currentDayIdx = 6;
+            
+            // Calculamos el "día absoluto" para saber si es pasado, presente o futuro
+            const viewedAbsDay = (displayWeek * 7) + currentDayIdx;
+            const currentAbsDay = (actualWeek * 7) + actualDayOfWeek;
+
+            const currentData = weekData[displayWeek] || { len: "--", weight: "--", bpm: "--", fruit:{n:"--",e:""}, anim:{n:"--",e:""}, facts:[] };
             const item = document.getElementById('category-select').value === 'fruits' ? currentData.fruit : currentData.anim;
             
             const weekLabel = document.getElementById('current-week-label');
             weekLabel.classList.remove('not-current', 'completed');
-            let daysSuffix = (manualWeekOffset === 0 && extraDays > 0) ? ` +${extraDays}` : "";
-            let prefix = "";
-
-            if (manualWeekOffset < 0) { prefix = "✅ "; weekLabel.classList.add('completed'); } 
-            else if (manualWeekOffset > 0) { prefix = "⚠️ "; weekLabel.classList.add('not-current'); } 
             
-            weekLabel.innerText = `${prefix}Semana ${displayWeek}${daysSuffix}`;
+            let prefix = "";
+            if (viewedAbsDay < currentAbsDay) { 
+                prefix = "✅ "; 
+                weekLabel.classList.add('completed'); 
+            } else if (viewedAbsDay > currentAbsDay) { 
+                prefix = "⚠️ "; 
+                weekLabel.classList.add('not-current'); 
+            } 
+            
+            // Etiqueta ahora muestra "Semana X - Día Y" (Día del 1 al 7)
+			if (currentDayIdx == 0) { 
+                weekLabel.innerText = `${prefix}Semana ${displayWeek}`;
+            } else { 
+                weekLabel.innerText = `${prefix}Semana ${displayWeek} + ${currentDayIdx}`;
+            } 
+            //weekLabel.innerText = `${prefix}Semana ${displayWeek} + ${currentDayIdx}`;
+            
             document.getElementById('compare-name').innerText = item.n;
             document.getElementById('compare-emoji').innerText = item.e;
-
             document.getElementById('meas-len').innerText = formatVal(currentData.len);
             document.getElementById('meas-weight').innerText = formatVal(currentData.weight);
             document.getElementById('meas-bpm').innerText = formatVal(currentData.bpm);
             
-            if (displayWeek > actualWeek) {
-                document.getElementById('weekly-fact').innerHTML = `🔒 Ya te gustaría ver la frase de esta semana, pero para eso vas a tener que esperar hasta la <b>semana ${displayWeek}</b>.`;
+            // Lógica para mostrar la frase del día
+            const factArray = currentData.facts || [];
+            let dayFact = factArray[currentDayIdx] || "Aún no hay frase para este día.";
+            
+            if (viewedAbsDay > currentAbsDay) {
+                document.getElementById('weekly-fact-text').innerHTML = `🔒 Ya te gustaría ver la frase de hoy, pero para eso vas a tener que esperar.`;
             } else {
-                document.getElementById('weekly-fact').innerText = currentData.fact;
+                document.getElementById('weekly-fact-text').innerHTML = dayFact;
             }
 
             const formatTime = (ms) => { const totalSec = Math.floor(ms / 1000); const d = Math.floor(totalSec / 86400); const h = String(Math.floor((totalSec % 86400) / 3600)).padStart(2, '0'); const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0'); const s = String(totalSec % 60).padStart(2, '0'); return { days: `${d} días`, hms: `${h}:${m}:${s}` }; };
@@ -367,23 +982,22 @@
             document.getElementById('left-days').innerText = l.days; document.getElementById('left-hms').innerText = l.hms;
             checkContractionDisplay(displayWeek);
         }
+
         function checkContractionDisplay(displayWeek) {
             const container = document.getElementById('contraction-container');
-            
-            // Si la semana es menor a 35, ocultamos el contenedor
             if (displayWeek < MIN_WEEK_FOR_CONTRACTIONS) {
                 container.style.display = 'none';
             } else {
-                container.style.display = 'block'; // O 'flex', según tu diseño
+                container.style.display = 'block';
             }
         }
+
         // ==========================================
-        // NUEVA LÓGICA: PATADITAS Y CONTRACCIONES
+        // LÓGICA: PATADITAS Y CONTRACCIONES
         // ==========================================
         let kicksData = JSON.parse(localStorage.getItem('luca_kicks')) || [];
         let contrData = JSON.parse(localStorage.getItem('luca_contrs')) || [];
         
-        // Formateador de tiempo (m y s con un decimal)
         function formatTimeElapse(ms) {
             if (ms === undefined || ms === null || isNaN(ms)) return "--";
             const totalSec = ms / 1000;
@@ -427,7 +1041,6 @@
             const now = Date.now();
             
             if(!contrActive) {
-                // Iniciar
                 contrActive = true;
                 btn.innerHTML = '🛑 Detener contracción';
                 btn.classList.add('danger-active');
@@ -447,7 +1060,6 @@
                 }, 100);
                 
             } else {
-                // Detener
                 contrActive = false;
                 btn.innerHTML = '🔴 Iniciar contracción';
                 btn.classList.remove('danger-active');
